@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://origin-property.com/schemas/cms-v2.json",
+  "title": "Origin CMS v2 — Schema Export",
+  "description": "Complete, portable schema definition for the Origin Property Concierge content management system. Derived from the live Article entity, editor, and hermesImport backend function. Generated 2026-07-06. Platform-agnostic — no Base44-specific types.",
+  "version": "2.0.0",
+  "frozen": true,
+
+  "articleEntity": {
+    "$comment": "Canonical Article entity. Mirrors base44/entities/Article.jsonc. Built-in fields (id, created_date, updated_date, created_by_id) are platform-managed and omitted here.",
+    "type": "object",
+    "required": ["title", "slug", "category"],
+    "properties": {
+      "title": { "type": "string", "description": "Article headline. Maps to public H1." },
+      "slug": { "type": "string", "description": "URL-safe identifier. Public route: /article/{slug}. Must be unique." },
+      "category": { "type": "string", "description": "Editorial category. See categories[] for the controlled list used by the editor.", "$ref": "#/categories" },
+      "summary": { "type": "string", "description": "Short standfirst/excerpt shown in guide cards and article header." },
+      "hero_image_url": { "type": "string", "format": "uri", "description": "Hero image URL. Uploaded via the CMS or supplied by Hermes." },
+      "body": { "type": "string", "description": "Article body in Markdown." },
+      "faq_items": {
+        "type": "array",
+        "items": { "$ref": "#/faqStructure" },
+        "default": []
+      },
+      "seo_title": { "type": "string", "description": "Title tag for search engines. Falls back to title if empty." },
+      "meta_description": { "type": "string", "description": "Meta description tag, ~155 characters." },
+      "focus_keyword": { "type": "string", "description": "Primary SEO keyword the article targets." },
+      "search_intent": { "$ref": "#/seoFields/properties/search_intent" },
+      "target_audience": { "$ref": "#/seoFields/properties/target_audience" },
+      "reading_time": { "type": "number", "description": "Estimated reading time in minutes. Auto-calculated as ceil(words/200)." },
+      "word_count": { "type": "number", "description": "Body word count. Auto-calculated on save." },
+      "seo_score": { "type": "string", "default": "Pending Hermes Analysis", "description": "SEO quality score. Populated by Hermes Lab; defaults to pending string." },
+      "internal_links": { "type": "array", "items": { "type": "string" }, "default": [], "description": "Slugs of editor-selected related articles." },
+      "suggested_internal_links": { "type": "array", "items": { "type": "string" }, "default": [], "description": "Read-only Hermes suggestions. Not edited directly." },
+      "external_references": { "type": "array", "items": { "$ref": "#/externalReference" }, "default": [], "description": "Editor-curated external citations." },
+      "suggested_external_references": { "type": "array", "items": { "$ref": "#/externalReference" }, "default": [], "description": "Read-only Hermes citation suggestions." },
+      "hermes_metadata": { "$ref": "#/hermesMetadata" },
+      "revisions": { "type": "array", "items": { "$ref": "#/revisionEntry" }, "default": [] },
+      "status": { "$ref": "#/workflow/properties/status" },
+      "featured": { "type": "boolean", "default": false, "description": "Marks the article for featured placement on the home page." }
+    }
+  },
+
+  "categories": {
+    "$comment": "Controlled vocabulary used by the article editor (src/components/admin/editor/ContentFields.jsx). The entity schema stores category as a free string, but the UI restricts selection to these values.",
+    "type": "string",
+    "enum": [
+      "Getting Started as a Landlord",
+      "Rental Appraisal",
+      "Choosing a Property Manager",
+      "Leasing Process",
+      "Compliance",
+      "Maintenance & Inspections",
+      "End of Lease"
+    ]
+  },
+
+  "faqStructure": {
+    "$comment": "A single FAQ entry. Rendered on the article detail page inside a collapsible accordion.",
+    "type": "object",
+    "properties": {
+      "question": { "type": "string" },
+      "answer": { "type": "string" }
+    },
+    "required": ["question", "answer"]
+  },
+
+  "externalReference": {
+    "$comment": "An external citation with favicon, title, and description.",
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "url": { "type": "string", "format": "uri" },
+      "description": { "type": "string" }
+    },
+    "required": ["title", "url"]
+  },
+
+  "seoFields": {
+    "$comment": "SEO and targeting fields grouped for editor clarity.",
+    "type": "object",
+    "properties": {
+      "seo_title": { "type": "string" },
+      "meta_description": { "type": "string" },
+      "focus_keyword": { "type": "string" },
+      "search_intent": {
+        "type": "string",
+        "enum": ["Informational", "Commercial", "Transactional", "Local SEO"],
+        "description": "The search intent the article is optimised for."
+      },
+      "target_audience": {
+        "type": "string",
+        "enum": ["Landlord", "Investor", "First Home Buyer", "Buyer", "Vendor", "Tenant"],
+        "description": "Primary reader persona."
+      }
+    }
+  },
+
+  "hermesMetadata": {
+    "$comment": "Internal, non-public metadata block. Populated by the Hermes Lab AI engine. Not rendered on the public site. Used for backend analysis, provenance tracking, and quality scoring.",
+    "type": "object",
+    "properties": {
+      "article_uuid": { "type": "string", "description": "Stable UUID assigned by Hermes." },
+      "hermes_project_id": { "type": "string", "description": "Hermes project/workspace this article belongs to." },
+      "ai_version": { "type": "string", "description": "Model/version that generated the content." },
+      "generated_by": { "type": "string", "description": "Identifier of the generating agent or pipeline." },
+      "generated_date": { "type": "string", "format": "date-time" },
+      "last_ai_review": { "type": "string", "format": "date-time" },
+      "last_ai_analysis": { "type": "string", "format": "date-time" },
+      "last_optimised": { "type": "string", "format": "date-time" },
+      "research_version": { "type": "string", "description": "Research dataset version used." },
+      "seo_version": { "type": "string", "description": "SEO ruleset version applied." },
+      "prompt_version": { "type": "string", "description": "Prompt template version." },
+      "language": { "type": "string", "description": "ISO-639-1 code, e.g. 'en'." },
+      "target_region": { "type": "string", "description": "Geographic targeting, e.g. 'AU-MEL'." },
+      "ai_confidence": { "type": "string", "description": "Confidence score as a string (allows '87%' etc.)." },
+      "hermes_confidence": { "type": "string" },
+      "content_score": { "type": "string" },
+      "quality_score": { "type": "string" },
+      "topic_cluster": { "type": "string", "description": "Cluster/pillar this article belongs to." },
+      "primary_keyword": { "type": "string" },
+      "secondary_keywords": { "type": "array", "items": { "type": "string" } },
+      "competitor_score": { "type": "string", "description": "Comparative scoring against competitor content." },
+      "content_freshness": { "type": "string", "description": "Freshness/recency signal." },
+      "schema_version": { "type": "string", "description": "Version of this metadata schema." }
+    }
+  },
+
+  "revisionEntry": {
+    "$comment": "An append-only entry in the article's revision history. Added on every save.",
+    "type": "object",
+    "properties": {
+      "version": { "type": "number", "description": "Incrementing version number." },
+      "action": { "type": "string", "description": "Free-text description of the change." },
+      "timestamp": { "type": "string", "format": "date-time" },
+      "title": { "type": "string", "description": "Article title at this revision." },
+      "status": { "type": "string", "description": "Workflow status at this revision." },
+      "word_count": { "type": "number" }
+    },
+    "required": ["version", "timestamp"]
+  },
+
+  "workflow": {
+    "$comment": "Editorial lifecycle. Order reflects the canonical progression. 'needs_update' and 'archived' are terminal/secondary states reachable from any point.",
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": ["draft", "review", "approved", "published", "needs_update", "archived"],
+        "default": "draft"
+      }
+    },
+    "status_flow": ["draft", "review", "approved", "published", "needs_update", "archived"],
+    "status_meta": {
+      "draft": { "label": "Draft", "visibility": "private" },
+      "review": { "label": "In Review", "visibility": "private" },
+      "approved": { "label": "Approved", "visibility": "private" },
+      "published": { "label": "Published", "visibility": "public", "$comment": "Only 'published' articles appear on the public website." },
+      "needs_update": { "label": "Needs Update", "visibility": "private" },
+      "archived": { "label": "Archived", "visibility": "private" }
+    }
+  },
+
+  "importApi": {
+    "$comment": "Schema for the Hermes Lab import endpoint. POST to base44.functions.invoke('hermesImport', payload). Backend function: base44/functions/hermesImport/entry.ts. Admin-only (user.role === 'admin'). Creates a new Article if the slug is unused, otherwise updates the existing Article with the matching slug. No AI generation runs inside the CMS — this endpoint only receives and stores finished content.",
+    "endpoint": "hermesImport",
+    "method": "invoke",
+    "auth": "admin",
+    "upsert_key": "slug",
+    "required": ["title", "slug"],
+    "request": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string", "description": "If an article with this slug exists, it is updated; otherwise a new one is created." },
+        "category": { "type": "string", "default": "Getting Started as a Landlord", "$ref": "#/categories" },
+        "summary": { "type": "string", "default": "" },
+        "hero_image": { "type": "string", "format": "uri", "description": "Alias for hero_image_url. Accepted by the import API for Hermes convenience." },
+        "hero_image_url": { "type": "string", "format": "uri", "description": "Canonical field. hero_image takes precedence if both are supplied." },
+        "body": { "type": "string", "description": "Markdown.", "default": "" },
+        "faq": { "type": "array", "items": { "$ref": "#/faqStructure" }, "description": "Alias for faq_items. Accepted by the import API for Hermes convenience." },
+        "faq_items": { "type": "array", "items": { "$ref": "#/faqStructure" }, "description": "Canonical field. faq takes precedence if both are supplied." },
+        "seo_title": { "type": "string", "default": "" },
+        "meta_description": { "type": "string", "default": "" },
+        "focus_keyword": { "type": "string", "default": "" },
+        "search_intent": { "$ref": "#/seoFields/properties/search_intent" },
+        "target_audience": { "$ref": "#/seoFields/properties/target_audience" },
+        "reading_time": { "type": "number", "default": 0 },
+        "word_count": { "type": "number", "default": 0 },
+        "seo_score": { "type": "string", "default": "Pending Hermes Analysis" },
+        "internal_links": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "external_references": { "type": "array", "items": { "$ref": "#/externalReference" }, "default": [] },
+        "suggested_internal_links": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "suggested_external_references": { "type": "array", "items": { "$ref": "#/externalReference" }, "default": [] },
+        "hermes_metadata": { "$ref": "#/hermesMetadata" },
+        "status": { "$ref": "#/workflow/properties/status" },
+        "featured": { "type": "boolean", "default": false }
+      }
+    },
+    "response": {
+      "success": {
+        "type": "object",
+        "properties": {
+          "status": { "const": "success" },
+          "article": { "$ref": "#/articleEntity" }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
+        },
+        "examples": [
+          { "status": 400, "error": "Title and slug are required" },
+          { "status": 401, "error": "Unauthorized" },
+          { "status": 403, "error": "Forbidden — admin only" },
+          { "status": 500, "error": "<exception message>" }
+        ]
+      }
+    },
+    "field_aliases": {
+      "$comment": "The import API accepts Hermes-friendly aliases that map to canonical Article fields. Aliases take precedence when both are present.",
+      "hero_image": "hero_image_url",
+      "faq": "faq_items"
+    },
+    "defaults": {
+      "$comment": "Applied when a field is omitted from the payload.",
+      "category": "Getting Started as a Landlord",
+      "seo_score": "Pending Hermes Analysis",
+      "status": "draft",
+      "featured": false
+    }
+  }
+}

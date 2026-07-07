@@ -1,0 +1,50 @@
+{
+  "name": "PropertyGuide",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Getting Started",
+        "Rental Appraisal",
+        "Choosing a Manager",
+        "Leasing Process",
+        "Tenant Selection",
+        "Maintenance & Compliance",
+        "End of Lease",
+        "FAQs"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "read_time": {
+      "type": "number"
+    },
+    "published": {
+      "type": "boolean",
+      "default": true
+    },
+    "sort_order": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "title",
+    "slug",
+    "category",
+    "summary"
+  ]
+}

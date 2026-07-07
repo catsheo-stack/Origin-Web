@@ -1,0 +1,119 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "property_address": {
+      "type": "string"
+    },
+    "street_number": {
+      "type": "string"
+    },
+    "street_name": {
+      "type": "string"
+    },
+    "suburb": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string",
+      "default": "Australia"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "address_place_id": {
+      "type": "string"
+    },
+    "manual_address_entry": {
+      "type": "boolean"
+    },
+    "property_suburb": {
+      "type": "string"
+    },
+    "property_type": {
+      "type": "string",
+      "enum": [
+        "House",
+        "Apartment",
+        "Townhouse",
+        "Unit",
+        "Other"
+      ]
+    },
+    "currently_tenanted": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No",
+        "Not sure"
+      ]
+    },
+    "help_needed": {
+      "type": "string",
+      "enum": [
+        "New property management",
+        "Switching property managers",
+        "Rental appraisal",
+        "Leasing only",
+        "General enquiry"
+      ]
+    },
+    "preferred_contact": {
+      "type": "string",
+      "enum": [
+        "Phone",
+        "Email",
+        "SMS"
+      ]
+    },
+    "additional_notes": {
+      "type": "string"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "As soon as possible",
+        "Within a month",
+        "Just exploring",
+        "Not sure yet"
+      ]
+    },
+    "source_page": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Contacted",
+        "Qualified",
+        "Converted",
+        "Closed"
+      ],
+      "default": "New"
+    }
+  },
+  "required": [
+    "full_name",
+    "email"
+  ]
+}
