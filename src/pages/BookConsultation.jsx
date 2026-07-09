@@ -1,64 +1,109 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { Calendar, UploadCloud, FileText, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 import SectionWrapper from "@/components/origin/SectionWrapper";
-import SectionHeader from "@/components/origin/SectionHeader";
-import LeadForm from "@/components/origin/LeadForm";
 
 export default function BookConsultation() {
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadedUrls, setUploadedUrls] = useState([]);
+
   useEffect(() => {
     base44.analytics.track({ eventName: "page_viewed", properties: { page: "book-consultation" } });
   }, []);
 
-  return (
-    <>
-      <section className="bg-parchment pt-28 pb-10 md:pt-32 md:pb-14">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10">
-          <SectionHeader
-            label="Book a Consultation"
-            title="Let's talk about your property"
-            subtitle="Share a few details and we'll get back to you with a tailored property management recommendation. No obligation, no pressure."
-          />
-        </div>
-      </section>
+  const handleFileChange = async (e) => {
+    const selected = Array.from(e.target.files || []);
+    if (selected.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of selected) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        setUploadedUrls((prev) => [...prev, file_url]);
+      }
+      setFiles((prev) => [...prev, ...selected]);
+      toast({ title: "File(s) attached", description: `${selected.length} file(s) ready to share.` });
+    } catch {
+      toast({ title: "Upload failed", description: "Please try again or email your brief directly.", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
 
-      <SectionWrapper>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-          <div className="lg:sticky lg:top-32">
-            <h3 className="font-heading text-xl font-light text-midnight mb-6">What you'll receive</h3>
-            <div className="space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-golden mt-2 flex-shrink-0" />
-                <div>
-                  <h4 className="text-sm font-medium text-midnight">Personalised rental appraisal</h4>
-                  <p className="text-sm text-midnight/50 mt-1 leading-relaxed">Based on current market data for your specific suburb and property type.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-golden mt-2 flex-shrink-0" />
-                <div>
-                  <h4 className="text-sm font-medium text-midnight">Transparent fee breakdown</h4>
-                  <p className="text-sm text-midnight/50 mt-1 leading-relaxed">Clear pricing with no hidden costs or unexpected charges.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-golden mt-2 flex-shrink-0" />
-                <div>
-                  <h4 className="text-sm font-medium text-midnight">Tailored management recommendation</h4>
-                  <p className="text-sm text-midnight/50 mt-1 leading-relaxed">Honest advice based on your property, your goals, and your situation.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-golden mt-2 flex-shrink-0" />
-                <div>
-                  <h4 className="text-sm font-medium text-midnight">No obligation</h4>
-                  <p className="text-sm text-midnight/50 mt-1 leading-relaxed">This is a conversation, not a commitment. No pressure, no hard sell.</p>
-                </div>
-              </div>
-            </div>
+  const removeFile = (idx) => {
+    setFiles((prev) => prev.filter((_, i) => i !== idx));
+    setUploadedUrls((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleBook = () => {
+    base44.analytics.track({ eventName: "consultation_booked", properties: { files_attached: uploadedUrls.length } });
+    toast({ title: "Booking received", description: uploadedUrls.length > 0 ? "We've received your brief and will be in touch shortly." : "We'll be in touch shortly to confirm your consultation." });
+  };
+
+  return (
+    <SectionWrapper className="!pt-32 md:!pt-40 !pb-20 md:!pb-28">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm text-center">
+          <div className="w-14 h-14 mx-auto mb-6 rounded-full bg-golden/15 flex items-center justify-center">
+            <Calendar size={26} className="text-golden" strokeWidth={1.5} />
           </div>
-          <LeadForm sourcePage="book-consultation" />
+          <h2 className="font-heading text-2xl md:text-3xl font-light text-midnight mb-3">
+            Choose a time that suits you
+          </h2>
+          <p className="text-sm text-midnight/50 mb-8 max-w-md mx-auto leading-relaxed">
+            Book a consultation and we'll guide you to the most suitable next step based on your situation.
+          </p>
+
+          <div className="border border-dashed border-stone rounded-xl py-16 px-6 mb-8 bg-parchment/40">
+            <p className="text-sm text-midnight/40">Calendar booking embed goes here</p>
+          </div>
+
+          {/* File upload */}
+          <div className="mb-8 text-left">
+            <p className="text-xs font-medium tracking-wide uppercase text-midnight/50 mb-2">Attach your brief (optional)</p>
+            <p className="text-xs text-midnight/40 mb-3 leading-relaxed">
+              Downloaded a report from one of our tools? Attach it here so we can review it before your call.
+            </p>
+            <label
+              className="flex flex-col items-center justify-center gap-2 border border-dashed border-stone rounded-xl py-8 px-6 bg-parchment/40 cursor-pointer hover:border-golden/50 hover:bg-golden/5 transition-colors"
+            >
+              <UploadCloud size={24} className="text-midnight/40" strokeWidth={1.5} />
+              <p className="text-sm text-midnight/50">
+                {uploading ? "Uploading..." : "Click to upload your brief"}
+              </p>
+              <p className="text-xs text-midnight/30">PDF, DOC, DOCX, PNG or JPG</p>
+              <input type="file" multiple accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" onChange={handleFileChange} className="hidden" disabled={uploading} />
+            </label>
+
+            {files.length > 0 && (
+              <ul className="mt-3 space-y-2">
+                {files.map((file, idx) => (
+                  <li key={idx} className="flex items-center justify-between gap-3 bg-white border border-stone rounded-lg px-4 py-2.5">
+                    <span className="flex items-center gap-2 text-sm text-midnight min-w-0">
+                      <FileText size={15} className="text-golden flex-shrink-0" />
+                      <span className="truncate">{file.name}</span>
+                    </span>
+                    <button type="button" onClick={() => removeFile(idx)} className="text-midnight/30 hover:text-red-500 transition-colors flex-shrink-0">
+                      <X size={16} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleBook}
+            disabled={uploading}
+            className="w-full sm:w-auto bg-golden text-midnight font-medium text-sm px-10 py-4 rounded-full hover:bg-golden/90 transition-colors disabled:opacity-50"
+          >
+            Book a Consultation
+          </button>
         </div>
-      </SectionWrapper>
-    </>
+      </div>
+    </SectionWrapper>
   );
 }

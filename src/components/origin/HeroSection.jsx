@@ -28,9 +28,10 @@ export default function HeroSection({ label, title, titleAccent, subtitle, ctaTe
               </p>
             )}
             {ctaText && ctaLink && (
-              ctaLink.startsWith("#") ? (
+              (ctaLink.startsWith("#") || ctaLink.startsWith("http")) ? (
                 <a
                   href={ctaLink}
+                  {...(ctaLink.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   className="inline-block mt-8 bg-golden text-midnight text-sm font-medium px-7 py-3.5 rounded-full hover:bg-golden/90 transition-colors"
                   onClick={() => { base44.analytics.track({ eventName: "cta_clicked", properties: { cta: "hero_cta", page: window.location.pathname } }); }}
                 >

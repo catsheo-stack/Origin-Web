@@ -1,13 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Clock, User, Calendar } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { base44 } from '@/api/base44Client';
 import { seededGuides } from '@/data/seededGuides';
+import { buyerArticles } from '@/data/buyerResources';
 import SectionWrapper from '@/components/origin/SectionWrapper';
 import GuideCard from '@/components/origin/GuideCard';
 import FAQAccordion from '@/components/origin/FAQAccordion';
 import CTABanner from '@/components/origin/CTABanner';
+
+const slugify = (text) =>
+  String(text).toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+
+const extractText = (children) => {
+  if (typeof children === 'string') return children;
+  if (Array.isArray(children)) return children.map(extractText).join('');
+  if (React.isValidElement(children)) return extractText(children.props?.children);
+  return '';
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+  } catch {
+    return '';
+  }
+};
 
 export default function ArticleDetail() {
   const { slug } = useParams();
@@ -20,25 +40,35 @@ export default function ArticleDetail() {
       setLoading(true);
       try {
         const results = await base44.entities.Article.filter({ slug, status: 'published' });
-        const found = results.length > 0 ? results[0] : seededGuides.find((g) => g.slug === slug) || null;
+        const found = results.length > 0 ? results[0] : seededGuides.find((g) => g.slug === slug) || buyerArticles.find((g) => g.slug === slug) || null;
 
         if (found) {
           setArticle(found);
           base44.analytics.track({ eventName: 'guide_opened', properties: { guide: slug } });
 
-          // Related: other seeded guides (same category first), excluding current
-          const sameCat = seededGuides.filter((g) => g.slug !== slug && g.category === found.category);
-          const otherCat = seededGuides.filter((g) => g.slug !== slug && g.category !== found.category);
-          setRelated([...sameCat, ...otherCat].slice(0, 3));
+          if (found.related_articles && found.related_articles.length > 0) {
+            setRelated(found.related_articles);
+          } else {
+            const isBuyer = buyerArticles.some((g) => g.slug === slug);
+            const source = isBuyer ? buyerArticles : seededGuides;
+            const sameCat = source.filter((g) => g.slug !== slug && g.category === found.category);
+            const otherCat = source.filter((g) => g.slug !== slug && g.category !== found.category);
+            setRelated([...sameCat, ...otherCat].slice(0, 3));
+          }
         }
       } catch {
-        // CMS unavailable — try seeded guide directly
-        const found = seededGuides.find((g) => g.slug === slug) || null;
+        const found = seededGuides.find((g) => g.slug === slug) || buyerArticles.find((g) => g.slug === slug) || null;
         if (found) {
           setArticle(found);
-          const sameCat = seededGuides.filter((g) => g.slug !== slug && g.category === found.category);
-          const otherCat = seededGuides.filter((g) => g.slug !== slug && g.category !== found.category);
-          setRelated([...sameCat, ...otherCat].slice(0, 3));
+          if (found.related_articles && found.related_articles.length > 0) {
+            setRelated(found.related_articles);
+          } else {
+            const isBuyer = buyerArticles.some((g) => g.slug === slug);
+            const source = isBuyer ? buyerArticles : seededGuides;
+            const sameCat = source.filter((g) => g.slug !== slug && g.category === found.category);
+            const otherCat = source.filter((g) => g.slug !== slug && g.category !== found.category);
+            setRelated([...sameCat, ...otherCat].slice(0, 3));
+          }
         }
       } finally {
         setLoading(false);
@@ -60,21 +90,70 @@ export default function ArticleDetail() {
       <SectionWrapper className="pt-32">
         <div className="text-center py-20">
           <h1 className="font-heading text-2xl text-midnight mb-4">Article not found</h1>
-          <Link to="/property-guides" className="text-golden hover:text-golden/80 text-sm">
-            ← Back to Property Guides
+          <Link to="/conveyancing/resources" className="text-golden hover:text-golden/80 text-sm">
+            &larr; Back to Conveyancing Resources
           </Link>
         </div>
       </SectionWrapper>
     );
   }
 
+  const svc = article.service;
+  const isConveyancing = svc === 'conveyancing';
+  const isMortgage = svc === 'mortgage-finance';
+  const isBuyer = svc === 'buyer-advisory' || buyerArticles.some((g) => g.slug === slug);
+  const isPropertyManagement = svc === 'property-management';
+
+  const backLink = isConveyancing ? '/conveyancing/resources'
+    : isMortgage ? '/mortgage-finance/resources'
+    : isBuyer ? '/buyer-advisory/resources'
+    : isPropertyManagement ? '/property-management/resources'
+    : '/property-guides';
+  const backLabel = isConveyancing ? 'Conveyancing Resources'
+    : isMortgage ? 'Mortgage & Finance Resources'
+    : isBuyer ? 'Buyer Advisory Resources'
+    : isPropertyManagement ? 'Property Management Resources'
+    : 'Property Guides';
+
+  // SEO
+  if (article.seo_title) document.title = article.seo_title;
+  if (article.meta_description) {
+    let descEl = document.head.querySelector('meta[name="description"]');
+    if (!descEl) { descEl = document.createElement('meta'); document.head.appendChild(descEl); }
+    descEl.setAttribute('content', article.meta_description);
+  }
+
+  const markdownComponents = {
+    h2: ({ children, ...props }) => {
+      const id = slugify(extractText(children));
+      return <h2 id={id} className="font-heading text-xl md:text-2xl text-midnight mt-10 mb-4 scroll-mt-24" {...props}>{children}</h2>;
+    },
+    h3: ({ children, ...props }) => {
+      const id = slugify(extractText(children));
+      return <h3 id={id} className="font-heading text-lg text-midnight mt-6 mb-2 scroll-mt-24" {...props}>{children}</h3>;
+    },
+    p: ({ ...props }) => <p className="text-base text-midnight/70 leading-relaxed mb-4" {...props} />,
+    ul: ({ ...props }) => <ul className="list-disc pl-5 space-y-1.5 mb-4 text-midnight/70" {...props} />,
+    ol: ({ ...props }) => <ol className="list-decimal pl-5 space-y-1.5 mb-4 text-midnight/70" {...props} />,
+    li: ({ ...props }) => <li className="text-base text-midnight/70 leading-relaxed" {...props} />,
+    strong: ({ ...props }) => <strong className="text-midnight font-medium" {...props} />,
+    a: ({ href, children, ...props }) => {
+      if (href && href.startsWith('/')) {
+        return <Link to={href} className="text-golden hover:text-golden/80 underline transition-colors">{children}</Link>;
+      }
+      return <a href={href} className="text-golden hover:text-golden/80 underline transition-colors" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
+    },
+    blockquote: ({ ...props }) => <blockquote className="border-l-4 border-golden/40 pl-4 italic text-midnight/60 mb-4" {...props} />,
+  };
+
   return (
     <>
+      {/* Header */}
       <section className="bg-parchment pt-28 pb-10 md:pt-32 md:pb-14">
         <div className="max-w-3xl mx-auto px-6 lg:px-10">
-          <Link to="/property-guides" className="inline-flex items-center gap-2 text-sm text-midnight/50 hover:text-accent-navy transition-colors mb-8">
+          <Link to={backLink} className="inline-flex items-center gap-2 text-sm text-midnight/50 hover:text-accent-navy transition-colors mb-8">
             <ArrowLeft size={14} />
-            Property Guides
+            {backLabel}
           </Link>
           {article.category && (
             <p className="text-xs font-medium tracking-widest uppercase text-golden mb-4">{article.category}</p>
@@ -85,9 +164,32 @@ export default function ArticleDetail() {
           {article.summary && (
             <p className="text-base text-midnight/60 leading-relaxed">{article.summary}</p>
           )}
+          {(article.author || article.publish_date || article.reading_time) && (
+            <div className="mt-6 flex flex-wrap items-center gap-4 text-xs text-midnight/40">
+              {article.author && (
+                <span className="flex items-center gap-1.5">
+                  <User size={13} />
+                  {article.author}
+                </span>
+              )}
+              {article.publish_date && (
+                <span className="flex items-center gap-1.5">
+                  <Calendar size={13} />
+                  {formatDate(article.publish_date)}
+                </span>
+              )}
+              {article.reading_time > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <Clock size={13} />
+                  {article.reading_time} min read
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
+      {/* Hero image */}
       {article.hero_image_url && (
         <section className="bg-parchment pb-10">
           <div className="max-w-4xl mx-auto px-6 lg:px-10">
@@ -96,22 +198,31 @@ export default function ArticleDetail() {
         </section>
       )}
 
+      {/* Body + TOC */}
       <section className="bg-parchment pb-16 md:pb-24">
         <div className="max-w-3xl mx-auto px-6 lg:px-10">
-          <ReactMarkdown
-            components={{
-              h2: ({node, ...props}) => <h2 className="font-heading text-xl text-midnight mt-8 mb-3" {...props} />,
-              p: ({node, ...props}) => <p className="text-base text-midnight/60 leading-relaxed mb-4" {...props} />,
-              ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-1 mb-4" {...props} />,
-              li: ({node, ...props}) => <li className="text-base text-midnight/60 leading-relaxed" {...props} />,
-              strong: ({node, ...props}) => <strong className="text-midnight font-medium" {...props} />,
-            }}
-          >
+          {article.table_of_contents && article.table_of_contents.length > 0 && (
+            <nav className="bg-stone/30 rounded-xl p-6 mb-10">
+              <p className="text-xs font-medium tracking-widest uppercase text-golden mb-4">Table of Contents</p>
+              <ul className="space-y-2">
+                {article.table_of_contents.map((item, i) => (
+                  <li key={i}>
+                    <a href={`#${item.anchor}`} className="text-sm text-accent-navy hover:text-golden transition-colors">
+                      {item.heading}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+
+          <ReactMarkdown components={markdownComponents}>
             {article.body}
           </ReactMarkdown>
         </div>
       </section>
 
+      {/* FAQ */}
       {article.faq_items && article.faq_items.length > 0 && (
         <SectionWrapper bg="bg-white">
           <div className="max-w-3xl mx-auto">
@@ -121,15 +232,16 @@ export default function ArticleDetail() {
         </SectionWrapper>
       )}
 
+      {/* Related */}
       {related.length > 0 && (
         <SectionWrapper>
-          <h2 className="font-heading text-xl text-midnight mb-8">Related Guides</h2>
+          <h2 className="font-heading text-xl text-midnight mb-8">Related Articles</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {related.map((r) => (
               <GuideCard
-                key={r.id}
+                key={r.id || r.slug}
                 title={r.title}
-                category={r.category}
+                category={r.category || article.category}
                 summary={r.summary}
                 slug={r.slug}
                 imageUrl={r.hero_image_url}
@@ -139,12 +251,43 @@ export default function ArticleDetail() {
         </SectionWrapper>
       )}
 
-      <CTABanner
-        title="Ready to discuss your property?"
-        subtitle="Book a no-obligation conversation with our property management team."
-        ctaText="Get My Rental Appraisal"
-        ctaLink="/property-management#lead-form"
-      />
+      {/* CTA */}
+      {isConveyancing ? (
+        <CTABanner
+          title="Need help with your property transaction?"
+          subtitle="Book a consultation and we'll guide you through contract review, Section 32 checks and settlement."
+          ctaText="Book a Consultation"
+          ctaLink="/book-consultation?service=conveyancing"
+        />
+      ) : isMortgage ? (
+        <CTABanner
+          title="Need help navigating your home loan options?"
+          subtitle="Book a consultation and we'll connect you with finance guidance tailored to your situation."
+          ctaText="Book a Consultation"
+          ctaLink="/book-consultation?service=mortgage-finance"
+        />
+      ) : isBuyer ? (
+        <CTABanner
+          title="Need help choosing the right property?"
+          subtitle="Book a consultation and we'll help you understand your buying goals, risks and next steps."
+          ctaText="Start My Buyer Journey"
+          ctaLink="/buyer-advisory"
+        />
+      ) : isPropertyManagement ? (
+        <CTABanner
+          title="Ready to discuss your property?"
+          subtitle="Book a no-obligation conversation with our property management team."
+          ctaText="Get My Rental Appraisal"
+          ctaLink="/property-management#lead-form"
+        />
+      ) : (
+        <CTABanner
+          title="Ready to discuss your property?"
+          subtitle="Book a no-obligation conversation with our team."
+          ctaText="Book a Consultation"
+          ctaLink="/book-consultation"
+        />
+      )}
     </>
   );
 }

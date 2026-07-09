@@ -56,7 +56,8 @@
         "Apartment",
         "Townhouse",
         "Unit",
-        "Other"
+        "Other",
+        "Not sure yet"
       ]
     },
     "currently_tenanted": {
@@ -77,12 +78,47 @@
         "General enquiry"
       ]
     },
+    "service_required": {
+      "type": "string",
+      "enum": [
+        "Buyer Agent / Buyer Advisory",
+        "Mortgage Broker / Home Loan Support",
+        "Conveyancing",
+        "Property Management",
+        "Not sure yet"
+      ]
+    },
+    "property_stage": {
+      "type": "string",
+      "enum": [
+        "Just researching",
+        "Actively looking to buy",
+        "Found a property",
+        "Contract / Section 32 review needed",
+        "Need finance guidance",
+        "Need rental appraisal / property manager",
+        "Already own the property",
+        "Other"
+      ]
+    },
+    "timeline": {
+      "type": "string",
+      "enum": [
+        "ASAP",
+        "Within 1 month",
+        "1\u20133 months",
+        "3\u20136 months",
+        "Just planning ahead"
+      ]
+    },
     "preferred_contact": {
       "type": "string",
       "enum": [
         "Phone",
         "Email",
-        "SMS"
+        "SMS",
+        "WhatsApp",
+        "Text"
       ]
     },
     "additional_notes": {
@@ -98,6 +134,24 @@
       ]
     },
     "source_page": {
+      "type": "string"
+    },
+    "service_type": {
+      "type": "string"
+    },
+    "lead_source": {
+      "type": "string"
+    },
+    "form_type": {
+      "type": "string"
+    },
+    "buyer_profile": {
+      "type": "string"
+    },
+    "buyer_priorities": {
+      "type": "string"
+    },
+    "budget_range": {
       "type": "string"
     },
     "status": {

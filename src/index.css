@@ -79,3 +79,41 @@ html {
   background-color: #2C3E50;
   color: #F9F7F2;
 }
+
+/* Hermes Lab — Apple editorial heading reset (scoped, does not affect Origin) */
+.hermes-app h1,
+.hermes-app h2,
+.hermes-app h3,
+.hermes-app h4,
+.hermes-app h5,
+.hermes-app h6 {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  color: #111827;
+}
+
+/* Origin Tools — print-friendly summary (only .printable-summary prints) */
+@media print {
+  html, body {
+    height: auto !important;
+    background: #fff !important;
+  }
+  body * {
+    visibility: hidden !important;
+  }
+  .printable-summary,
+  .printable-summary * {
+    visibility: visible !important;
+  }
+  .printable-summary {
+    position: absolute !important;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  @page {
+    margin: 1.5cm;
+  }
+}

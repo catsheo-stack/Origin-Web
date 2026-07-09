@@ -1,92 +1,76 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import FooterDropdown from "./FooterDropdown";
 
 const serviceLinks = [
+  { label: "Buyer Advisory", path: "/buyer-advisory" },
   { label: "Property Management", path: "/property-management" },
+  { label: "Conveyancing", path: "/conveyancing" },
+  { label: "Mortgage & Finance", path: "/mortgage-finance" },
 ];
 
-const resourceLinks = [
-  { label: "Knowledge Centre", path: "/property-guides" },
-  { label: "Landlord Guides", path: "/property-guides/landlord-checklist" },
-  { label: "FAQs", path: "/property-guides/should-i-change-pm" },
+const knowledgeLinks = [
+  { label: "Articles", path: "/articles" },
+  { label: "Guides", path: "/guides" },
+  { label: "FAQ", path: "/faq" },
+  { label: "Tools", path: "/tools" },
+];
+
+const toolLinks = [
+  { label: "Origin Home Buying Planner", path: "/tools/origin-home-buying-planner" },
+  { label: "Property Management Readiness Checklist", path: "/tools/property-management-readiness-checklist" },
+  { label: "Investment Yield Calculator", path: "/tools/investment-yield-calculator" },
+  { label: "Buyer Settlement Tracker", path: "/tools/buyer-settlement-tracker" },
+  { label: "Seller Settlement Tracker", path: "/tools/seller-settlement-tracker" },
+];
+
+const companyLinks = [
+  { label: "About", path: "/about" },
+];
+
+const FOOTER_GROUPS = [
+  { key: "services", title: "Services", links: serviceLinks },
+  { key: "knowledge", title: "Knowledge Centre", links: knowledgeLinks },
+  { key: "tools", title: "Tools", links: toolLinks },
+  { key: "company", title: "Company", links: companyLinks },
 ];
 
 export default function Footer() {
+  const [openSection, setOpenSection] = useState(null);
+  const toggle = (key) => setOpenSection((cur) => (cur === key ? null : key));
+
   return (
     <footer className="bg-midnight text-parchment/80">
-      {/* Knowledge Centre CTA */}
-      <div className="bg-stone/40 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <p className="text-sm max-w-lg leading-relaxed text-parchment/70">
-            Need more information before deciding? Explore our Property Management
-            Knowledge Centre for landlord guides, checklists, FAQs and rental resources.
-          </p>
-          <Link
-            to="/property-guides"
-            className="bg-golden text-midnight text-sm font-medium px-6 py-2.5 rounded-full hover:bg-golden/90 transition-colors whitespace-nowrap"
-          >
-            Browse Knowledge Centre →
-          </Link>
-        </div>
-      </div>
-
-      {/* Main footer */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <p className="font-heading text-base font-light text-parchment mb-2">
-              Origin Property{" "}
-              <span className="text-golden font-normal">Concierge</span>
+      <div className="max-w-7xl mx-auto px-6 lg:px-10 py-5">
+        <div className="flex flex-col md:flex-row md:items-start gap-1 md:gap-10">
+          {/* Brand */}
+          <div className="md:mr-auto pb-2">
+            <p className="font-heading text-sm font-light text-parchment mb-1.5">
+              Origin Property <span className="text-golden font-normal">Concierge</span>
             </p>
-            <p className="text-xs leading-relaxed text-parchment/50 mb-3">
-              Elevated property management and leasing for serious Melbourne investors.
-            </p>
-            <a href="mailto:hello@originpropertyconcierge.com.au" className="text-xs text-parchment/50 hover:text-golden transition-colors">
+            <a
+              href="mailto:hello@originpropertyconcierge.com.au"
+              className="text-xs text-parchment/50 hover:text-golden transition-colors"
+            >
               hello@originpropertyconcierge.com.au
             </a>
           </div>
 
-          <div>
-            <h4 className="text-xs font-medium text-parchment mb-3 tracking-wide uppercase">
-              Services
-            </h4>
-            <ul className="space-y-2">
-              {serviceLinks.map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="text-xs text-parchment/50 hover:text-golden transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-xs font-medium text-parchment mb-3 tracking-wide uppercase">
-              Resources
-            </h4>
-            <ul className="space-y-2">
-              {resourceLinks.map((link) => (
-                <li key={link.path + link.label}>
-                  <Link
-                    to={link.path}
-                    className="text-xs text-parchment/50 hover:text-golden transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {FOOTER_GROUPS.map((g) => (
+            <FooterDropdown
+              key={g.key}
+              title={g.title}
+              links={g.links}
+              isOpen={openSection === g.key}
+              onToggle={() => toggle(g.key)}
+            />
+          ))}
         </div>
       </div>
 
+      {/* Copyright */}
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-3">
-          <p className="text-xs text-parchment/40 text-center">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-2.5">
+          <p className="text-[11px] text-parchment/40 text-center">
             © {new Date().getFullYear()} Origin Property Concierge. All rights reserved.
           </p>
         </div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
+import { ArrowLeft } from "lucide-react";
 import AddressAutocomplete from "@/components/origin/AddressAutocomplete";
 
 const propertyTypes = ["House", "Apartment", "Townhouse", "Unit", "Other"];
@@ -10,7 +11,7 @@ const helpOptions = ["New property management", "Switching property managers", "
 const urgencyOptions = ["As soon as possible", "Within a month", "Just exploring", "Not sure yet"];
 const contactMethods = ["Phone", "Email", "SMS"];
 
-export default function LeadForm({ sourcePage = "unknown" }) {
+export default function LeadForm({ sourcePage = "unknown", onBack }) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
@@ -56,6 +57,11 @@ export default function LeadForm({ sourcePage = "unknown" }) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-xl p-8 md:p-10 shadow-sm">
+      {onBack && (
+        <button type="button" onClick={onBack} className="inline-flex items-center gap-2 text-sm font-medium text-midnight border border-stone bg-white px-5 py-2.5 rounded-full hover:bg-stone/40 transition-colors mb-6 shadow-sm">
+          <ArrowLeft size={16} /> Back
+        </button>
+      )}
       <h3 className="font-heading text-2xl md:text-3xl font-light text-midnight mb-2">
         Tell us about your property
       </h3>

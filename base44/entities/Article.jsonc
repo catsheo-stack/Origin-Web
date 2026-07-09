@@ -8,8 +8,23 @@
     "slug": {
       "type": "string"
     },
+    "service": {
+      "type": "string",
+      "enum": [
+        "conveyancing",
+        "buyer-advisory",
+        "property-management",
+        "mortgage-finance"
+      ]
+    },
     "category": {
       "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "summary": {
       "type": "string"
@@ -17,8 +32,29 @@
     "hero_image_url": {
       "type": "string"
     },
+    "author": {
+      "type": "string"
+    },
+    "publish_date": {
+      "type": "string",
+      "format": "date"
+    },
     "body": {
       "type": "string"
+    },
+    "table_of_contents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "heading": {
+            "type": "string"
+          },
+          "anchor": {
+            "type": "string"
+          }
+        }
+      }
     },
     "faq_items": {
       "type": "array",
@@ -29,6 +65,20 @@
             "type": "string"
           },
           "answer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "related_articles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
             "type": "string"
           }
         }
