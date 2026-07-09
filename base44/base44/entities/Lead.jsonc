@@ -1,0 +1,173 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "property_address": {
+      "type": "string"
+    },
+    "street_number": {
+      "type": "string"
+    },
+    "street_name": {
+      "type": "string"
+    },
+    "suburb": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string",
+      "default": "Australia"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "address_place_id": {
+      "type": "string"
+    },
+    "manual_address_entry": {
+      "type": "boolean"
+    },
+    "property_suburb": {
+      "type": "string"
+    },
+    "property_type": {
+      "type": "string",
+      "enum": [
+        "House",
+        "Apartment",
+        "Townhouse",
+        "Unit",
+        "Other",
+        "Not sure yet"
+      ]
+    },
+    "currently_tenanted": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No",
+        "Not sure"
+      ]
+    },
+    "help_needed": {
+      "type": "string",
+      "enum": [
+        "New property management",
+        "Switching property managers",
+        "Rental appraisal",
+        "Leasing only",
+        "General enquiry"
+      ]
+    },
+    "service_required": {
+      "type": "string",
+      "enum": [
+        "Buyer Agent / Buyer Advisory",
+        "Mortgage Broker / Home Loan Support",
+        "Conveyancing",
+        "Property Management",
+        "Not sure yet"
+      ]
+    },
+    "property_stage": {
+      "type": "string",
+      "enum": [
+        "Just researching",
+        "Actively looking to buy",
+        "Found a property",
+        "Contract / Section 32 review needed",
+        "Need finance guidance",
+        "Need rental appraisal / property manager",
+        "Already own the property",
+        "Other"
+      ]
+    },
+    "timeline": {
+      "type": "string",
+      "enum": [
+        "ASAP",
+        "Within 1 month",
+        "1\u20133 months",
+        "3\u20136 months",
+        "Just planning ahead"
+      ]
+    },
+    "preferred_contact": {
+      "type": "string",
+      "enum": [
+        "Phone",
+        "Email",
+        "SMS",
+        "WhatsApp",
+        "Text"
+      ]
+    },
+    "additional_notes": {
+      "type": "string"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "As soon as possible",
+        "Within a month",
+        "Just exploring",
+        "Not sure yet"
+      ]
+    },
+    "source_page": {
+      "type": "string"
+    },
+    "service_type": {
+      "type": "string"
+    },
+    "lead_source": {
+      "type": "string"
+    },
+    "form_type": {
+      "type": "string"
+    },
+    "buyer_profile": {
+      "type": "string"
+    },
+    "buyer_priorities": {
+      "type": "string"
+    },
+    "budget_range": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Contacted",
+        "Qualified",
+        "Converted",
+        "Closed"
+      ],
+      "default": "New"
+    }
+  },
+  "required": [
+    "full_name",
+    "email"
+  ]
+}

@@ -1,0 +1,297 @@
+{
+  "name": "Article",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "service": {
+      "type": "string",
+      "enum": [
+        "conveyancing",
+        "buyer-advisory",
+        "property-management",
+        "mortgage-finance"
+      ]
+    },
+    "category": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "summary": {
+      "type": "string"
+    },
+    "hero_image_url": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "publish_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "body": {
+      "type": "string"
+    },
+    "table_of_contents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "heading": {
+            "type": "string"
+          },
+          "anchor": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "faq_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "related_articles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "meta_description": {
+      "type": "string"
+    },
+    "focus_keyword": {
+      "type": "string"
+    },
+    "search_intent": {
+      "type": "string",
+      "enum": [
+        "Informational",
+        "Commercial",
+        "Transactional",
+        "Local SEO"
+      ]
+    },
+    "target_audience": {
+      "type": "string",
+      "enum": [
+        "Landlord",
+        "Investor",
+        "First Home Buyer",
+        "Buyer",
+        "Vendor",
+        "Tenant"
+      ]
+    },
+    "reading_time": {
+      "type": "number"
+    },
+    "word_count": {
+      "type": "number"
+    },
+    "seo_score": {
+      "type": "string",
+      "default": "Pending Hermes Analysis"
+    },
+    "internal_links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "suggested_internal_links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "external_references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "suggested_external_references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "hermes_metadata": {
+      "type": "object",
+      "properties": {
+        "article_uuid": {
+          "type": "string"
+        },
+        "hermes_project_id": {
+          "type": "string"
+        },
+        "ai_version": {
+          "type": "string"
+        },
+        "generated_by": {
+          "type": "string"
+        },
+        "generated_date": {
+          "type": "string"
+        },
+        "last_ai_review": {
+          "type": "string"
+        },
+        "last_ai_analysis": {
+          "type": "string"
+        },
+        "last_optimised": {
+          "type": "string"
+        },
+        "research_version": {
+          "type": "string"
+        },
+        "seo_version": {
+          "type": "string"
+        },
+        "prompt_version": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "target_region": {
+          "type": "string"
+        },
+        "ai_confidence": {
+          "type": "string"
+        },
+        "hermes_confidence": {
+          "type": "string"
+        },
+        "content_score": {
+          "type": "string"
+        },
+        "quality_score": {
+          "type": "string"
+        },
+        "topic_cluster": {
+          "type": "string"
+        },
+        "primary_keyword": {
+          "type": "string"
+        },
+        "secondary_keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "competitor_score": {
+          "type": "string"
+        },
+        "content_freshness": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        }
+      }
+    },
+    "revisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number"
+          },
+          "action": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "word_count": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "review",
+        "approved",
+        "published",
+        "needs_update",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "slug",
+    "category"
+  ]
+}
