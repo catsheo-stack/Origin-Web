@@ -2,10 +2,6 @@ import React from "react";
 import { User } from "lucide-react";
 import catPhoto from "@/assets/cat.PNG";
 
-/**
- * Reusable portrait block for the About page.
- * Uses cat.jpg by default, but can still accept a custom src if needed.
- */
 export default function PortraitPlaceholder({
   src = catPhoto,
   alt = "Catherine Sheo",
@@ -20,7 +16,7 @@ export default function PortraitPlaceholder({
         <img
           src={src}
           alt={alt}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top"
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-midnight/30">
