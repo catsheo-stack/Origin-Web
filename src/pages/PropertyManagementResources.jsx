@@ -30,7 +30,7 @@ export default function PropertyManagementResources() {
         title: "Ready to discuss your property?",
         subtitle: "Book a no-obligation conversation with our property management team.",
         buttons: [
-          { label: "Get My Rental Appraisal", link: "/property-management", variant: "golden", analyticsKey: "pm_resources_appraisal" },
+          { label: "Get My Property Appraisal", link: "/property-management", variant: "golden", analyticsKey: "pm_resources_appraisal" },
           { label: "Book a Consultation", link: "/book-consultation", variant: "outline", analyticsKey: "pm_resources_consultation" },
         ],
       }}
