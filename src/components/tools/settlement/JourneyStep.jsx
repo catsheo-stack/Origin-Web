@@ -1,20 +1,35 @@
 import React from "react";
-import { CheckCircle2, Circle, Clock, ArrowLeft, ArrowRight } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  CheckCircle2,
+  Circle,
+  Clock,
+  ArrowLeft,
+  ArrowRight,
+} from "lucide-react";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const STATUS_OPTIONS = [
-  { value: "not_started", label: "Not Started" },
-  { value: "in_progress", label: "In Progress" },
-  { value: "completed", label: "Completed" },
+  {
+    value: "not_started",
+    label: "Not Started",
+  },
+  {
+    value: "in_progress",
+    label: "In Progress",
+  },
+  {
+    value: "completed",
+    label: "Completed",
+  },
 ];
 
-/**
- * Reusable guided-journey step.
- * One step is expanded at a time. Collapsed steps show a single compact line
- * (title + status). The entire collapsed card is clickable.
- * Active step shows: task description + tip, an "Update Progress" dropdown,
- * and Previous / Next navigation (Next is disabled until the step is completed).
- */
 export default function JourneyStep({
   milestone,
   stepNumber,
@@ -29,76 +44,195 @@ export default function JourneyStep({
   onPrev,
   onNext,
 }) {
-  const status = isCompleted ? "completed" : inProgress ? "in_progress" : "not_started";
+  const status = isCompleted
+    ? "completed"
+    : inProgress
+      ? "in_progress"
+      : "not_started";
 
-  // Collapsed — single compact line, full card clickable
   if (!isActive) {
-    const Icon = isCompleted ? CheckCircle2 : inProgress ? Clock : Circle;
+    const Icon = isCompleted
+      ? CheckCircle2
+      : inProgress
+        ? Clock
+        : Circle;
+
     const accent = isCompleted || inProgress;
-    const iconColor = isCompleted ? "text-emerald-600" : inProgress ? "text-golden" : "text-midnight/30";
+
+    const iconColor = isCompleted
+      ? "text-emerald-600"
+      : inProgress
+        ? "text-golden"
+        : "text-midnight/30";
+
     return (
       <button
         type="button"
         id={`milestone-${milestone.id}`}
         onClick={() => onActivate(milestone.id)}
-        className={`scroll-mt-24 w-full text-left flex items-center gap-3 px-4 py-3.5 rounded-xl transition-colors ${accent ? "bg-golden/5 hover:bg-golden/10" : "bg-parchment/50 hover:bg-parchment"}`}
+        className={`scroll-mt-24 flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-left transition-colors ${
+          accent
+            ? "bg-golden/5 hover:bg-golden/10"
+            : "bg-parchment/50 hover:bg-parchment"
+        }`}
         aria-expanded={false}
       >
-        <Icon size={20} className={`flex-shrink-0 ${iconColor}`} strokeWidth={1.5} />
-        <span className={`text-sm font-medium ${isCompleted ? "text-midnight/60" : "text-midnight"}`}>{milestone.title}</span>
-        {isCompleted && <span className="text-[10px] uppercase tracking-wide text-emerald-600 font-medium">Completed</span>}
-        {inProgress && <span className="text-[10px] uppercase tracking-wide text-golden font-medium">In Progress</span>}
-        <span className="sr-only">{milestone.aiExplanation}</span>
+        <Icon
+          size={20}
+          strokeWidth={1.5}
+          className={`flex-shrink-0 ${iconColor}`}
+        />
+
+        <span
+          className={`min-w-0 flex-1 text-sm font-medium ${
+            isCompleted
+              ? "text-midnight/60"
+              : "text-midnight"
+          }`}
+        >
+          {milestone.title}
+        </span>
+
+        {isCompleted && (
+          <span className="flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-emerald-600">
+            Completed
+          </span>
+        )}
+
+        {inProgress && (
+          <span className="flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-golden">
+            In Progress
+          </span>
+        )}
+
+        <span className="sr-only">
+          {milestone.aiExplanation}
+        </span>
       </button>
     );
   }
 
-  // Active — expanded single stage
+  const ProgressSelector = () => (
+    <Select
+      value={status}
+      onValueChange={(value) =>
+        onSetStatus(milestone.id, value)
+      }
+    >
+      <SelectTrigger className="h-11 w-full rounded-full border-stone bg-white text-sm sm:w-[170px]">
+        <SelectValue />
+      </SelectTrigger>
+
+      <SelectContent>
+        {STATUS_OPTIONS.map((option) => (
+          <SelectItem
+            key={option.value}
+            value={option.value}
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
   return (
-    <div id={`milestone-${milestone.id}`} className="scroll-mt-24 bg-white rounded-2xl border-2 border-golden/50 shadow-sm overflow-hidden" aria-expanded={true}>
-      <div className="px-5 md:px-6 py-4 border-b border-stone/50">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-golden mb-0.5">Step {stepNumber} of {totalSteps}</p>
-        <h3 className="font-heading text-lg text-midnight leading-tight">{milestone.title}</h3>
+    <div
+      id={`milestone-${milestone.id}`}
+      className="scroll-mt-24 overflow-hidden rounded-2xl border-2 border-golden/50 bg-white shadow-sm"
+      aria-expanded={true}
+    >
+      <div className="border-b border-stone/50 px-5 py-4 md:px-6">
+        <p className="mb-0.5 text-[10px] uppercase tracking-[0.2em] text-golden">
+          Step {stepNumber} of {totalSteps}
+        </p>
+
+        <h3 className="font-heading text-lg leading-tight text-midnight">
+          {milestone.title}
+        </h3>
       </div>
 
-      <div className="px-5 md:px-6 py-5">
-        <p className="text-sm text-midnight/80 leading-relaxed mb-4">{milestone.taskDescription}</p>
+      <div className="px-5 py-5 md:px-6">
+        <p className="mb-4 text-sm leading-relaxed text-midnight/80">
+          {milestone.taskDescription}
+        </p>
+
         <div className="flex items-start gap-3">
-          <span className="text-xs uppercase tracking-wide text-midnight/40 w-10 flex-shrink-0">💡 Tip</span>
-          <span className="text-sm text-midnight/70 leading-relaxed">{milestone.tip}</span>
+          <span className="w-10 flex-shrink-0 text-xs uppercase tracking-wide text-midnight/40">
+            💡 Tip
+          </span>
+
+          <span className="text-sm leading-relaxed text-midnight/70">
+            {milestone.tip}
+          </span>
         </div>
-        <span className="sr-only">{milestone.aiExplanation}</span>
+
+        <span className="sr-only">
+          {milestone.aiExplanation}
+        </span>
       </div>
 
-      <div className="hidden md:flex px-5 md:px-6 py-4 bg-parchment/40 border-t border-stone/50 items-center justify-between gap-3">
+      {/* Mobile controls */}
+      <div className="border-t border-stone/50 bg-parchment/40 px-4 py-4 md:hidden">
+        <div className="mb-4">
+          <span className="mb-2 block text-xs font-medium text-midnight/50">
+            Update Progress
+          </span>
+
+          <ProgressSelector />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={onPrev}
+            disabled={!hasPrev}
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-midnight/15 bg-white px-3 py-2.5 text-sm font-medium text-midnight/70 transition-colors hover:bg-midnight/5 disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <ArrowLeft size={16} />
+            Previous
+          </button>
+
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={isLast}
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-midnight px-3 py-2.5 text-sm font-medium text-parchment transition-colors hover:bg-accent-navy disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            Next
+            <ArrowRight size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop controls */}
+      <div className="hidden items-center justify-between gap-3 border-t border-stone/50 bg-parchment/40 px-5 py-4 md:flex md:px-6">
         <button
           type="button"
           onClick={onPrev}
           disabled={!hasPrev}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-midnight/60 disabled:opacity-30 disabled:cursor-not-allowed hover:text-midnight transition-colors px-1 py-2"
+          className="inline-flex items-center gap-1.5 px-1 py-2 text-sm font-medium text-midnight/60 transition-colors hover:text-midnight disabled:cursor-not-allowed disabled:opacity-30"
         >
-          <ArrowLeft size={16} /> Previous Stage
+          <ArrowLeft size={16} />
+          Previous Stage
         </button>
+
         <div className="flex items-center gap-2">
-          <span className="text-xs text-midnight/40">Update Progress</span>
-          <Select value={status} onValueChange={(v) => onSetStatus(milestone.id, v)}>
-            <SelectTrigger className="w-[150px] h-9 rounded-full border-stone bg-white text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <span className="text-xs text-midnight/40">
+            Update Progress
+          </span>
+
+          <ProgressSelector />
         </div>
+
         <button
           type="button"
           onClick={onNext}
           disabled={isLast}
-          className="inline-flex items-center gap-1.5 bg-midnight text-parchment text-sm font-medium px-5 py-2.5 rounded-full disabled:opacity-30 disabled:cursor-not-allowed hover:bg-accent-navy transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-full bg-midnight px-5 py-2.5 text-sm font-medium text-parchment transition-colors hover:bg-accent-navy disabled:cursor-not-allowed disabled:opacity-30"
         >
-          Next <ArrowRight size={16} />
+          Next
+          <ArrowRight size={16} />
         </button>
       </div>
     </div>
