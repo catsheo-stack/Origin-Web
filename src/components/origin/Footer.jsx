@@ -24,6 +24,7 @@ const toolLinks = [
 ];
 
 const companyLinks = [
+ { label: "Home", path: "/" },
   { label: "About", path: "/about" },
 ];
 
