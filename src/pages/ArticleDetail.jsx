@@ -1,170 +1,323 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, User, Calendar } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import { base44 } from '@/api/base44Client';
-import { seededGuides } from '@/data/seededGuides';
-import { buyerArticles } from '@/data/buyerResources';
-import SectionWrapper from '@/components/origin/SectionWrapper';
-import GuideCard from '@/components/origin/GuideCard';
-import FAQAccordion from '@/components/origin/FAQAccordion';
-import CTABanner from '@/components/origin/CTABanner';
+import React, { useEffect, useMemo } from "react";
+import { useParams, Link } from "react-router-dom";
+import { ArrowLeft, Clock, User, Calendar } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+
+import articlesData from "@/data/articles";
+import { seededGuides } from "@/data/seededGuides";
+import { buyerArticles } from "@/data/buyerResources";
+
+import SectionWrapper from "@/components/origin/SectionWrapper";
+import GuideCard from "@/components/origin/GuideCard";
+import FAQAccordion from "@/components/origin/FAQAccordion";
+import CTABanner from "@/components/origin/CTABanner";
 
 const slugify = (text) =>
-  String(text).toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+  String(text)
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-");
 
 const extractText = (children) => {
-  if (typeof children === 'string') return children;
-  if (Array.isArray(children)) return children.map(extractText).join('');
-  if (React.isValidElement(children)) return extractText(children.props?.children);
-  return '';
+  if (typeof children === "string") return children;
+
+  if (Array.isArray(children)) {
+    return children.map(extractText).join("");
+  }
+
+  if (React.isValidElement(children)) {
+    return extractText(children.props?.children);
+  }
+
+  return "";
 };
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return '';
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+
   try {
-    return new Date(dateStr).toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+    return new Date(dateString).toLocaleDateString("en-AU", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   } catch {
-    return '';
+    return "";
   }
 };
+
+const stripHtml = (value = "") =>
+  String(value)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const containsHtml = (value = "") => /<\/?[a-z][\s\S]*>/i.test(value);
 
 export default function ArticleDetail() {
   const { slug } = useParams();
-  const [article, setArticle] = useState(null);
-  const [related, setRelated] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const allArticles = useMemo(() => {
+    const combined = [
+      ...(Array.isArray(articlesData) ? articlesData : []),
+      ...(Array.isArray(buyerArticles) ? buyerArticles : []),
+      ...(Array.isArray(seededGuides) ? seededGuides : []),
+    ];
+
+    const uniqueArticles = new Map();
+
+    combined.forEach((item) => {
+      if (item?.slug && !uniqueArticles.has(item.slug)) {
+        uniqueArticles.set(item.slug, item);
+      }
+    });
+
+    return Array.from(uniqueArticles.values());
+  }, []);
+
+  const article = useMemo(() => {
+    return (
+      allArticles.find(
+        (item) =>
+          item.slug === slug &&
+          (!item.status || item.status === "published")
+      ) || null
+    );
+  }, [allArticles, slug]);
+
+  const related = useMemo(() => {
+    if (!article) return [];
+
+    if (
+      Array.isArray(article.related_articles) &&
+      article.related_articles.length > 0
+    ) {
+      return article.related_articles.slice(0, 3);
+    }
+
+    const sameService = allArticles.filter(
+      (item) =>
+        item.slug !== article.slug &&
+        item.service === article.service &&
+        (!item.status || item.status === "published")
+    );
+
+    const sameCategory = allArticles.filter(
+      (item) =>
+        item.slug !== article.slug &&
+        item.category === article.category &&
+        item.service !== article.service &&
+        (!item.status || item.status === "published")
+    );
+
+    const remaining = allArticles.filter(
+      (item) =>
+        item.slug !== article.slug &&
+        !sameService.some((match) => match.slug === item.slug) &&
+        !sameCategory.some((match) => match.slug === item.slug) &&
+        (!item.status || item.status === "published")
+    );
+
+    return [...sameService, ...sameCategory, ...remaining].slice(0, 3);
+  }, [article, allArticles]);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const results = await base44.entities.Article.filter({ slug, status: 'published' });
-        const found = results.length > 0 ? results[0] : seededGuides.find((g) => g.slug === slug) || buyerArticles.find((g) => g.slug === slug) || null;
+    if (!article) {
+      document.title = "Article Not Found | Origin Concierge";
+      return;
+    }
 
-        if (found) {
-          setArticle(found);
-          base44.analytics.track({ eventName: 'guide_opened', properties: { guide: slug } });
+    document.title =
+      article.seo_title ||
+      `${article.title || "Article"} | Origin Concierge`;
 
-          if (found.related_articles && found.related_articles.length > 0) {
-            setRelated(found.related_articles);
-          } else {
-            const isBuyer = buyerArticles.some((g) => g.slug === slug);
-            const source = isBuyer ? buyerArticles : seededGuides;
-            const sameCat = source.filter((g) => g.slug !== slug && g.category === found.category);
-            const otherCat = source.filter((g) => g.slug !== slug && g.category !== found.category);
-            setRelated([...sameCat, ...otherCat].slice(0, 3));
-          }
-        }
-      } catch {
-        const found = seededGuides.find((g) => g.slug === slug) || buyerArticles.find((g) => g.slug === slug) || null;
-        if (found) {
-          setArticle(found);
-          if (found.related_articles && found.related_articles.length > 0) {
-            setRelated(found.related_articles);
-          } else {
-            const isBuyer = buyerArticles.some((g) => g.slug === slug);
-            const source = isBuyer ? buyerArticles : seededGuides;
-            const sameCat = source.filter((g) => g.slug !== slug && g.category === found.category);
-            const otherCat = source.filter((g) => g.slug !== slug && g.category !== found.category);
-            setRelated([...sameCat, ...otherCat].slice(0, 3));
-          }
-        }
-      } finally {
-        setLoading(false);
+    const description =
+      article.meta_description ||
+      article.summary ||
+      article.excerpt ||
+      stripHtml(article.body || article.content || "");
+
+    if (description) {
+      let descriptionElement = document.head.querySelector(
+        'meta[name="description"]'
+      );
+
+      if (!descriptionElement) {
+        descriptionElement = document.createElement("meta");
+        descriptionElement.setAttribute("name", "description");
+        document.head.appendChild(descriptionElement);
       }
-    };
-    load();
-  }, [slug]);
 
-  if (loading) {
-    return (
-      <SectionWrapper className="pt-32 min-h-[50vh] flex items-center">
-        <div className="w-8 h-8 border-4 border-stone border-t-golden rounded-full animate-spin mx-auto" />
-      </SectionWrapper>
-    );
-  }
+      descriptionElement.setAttribute(
+        "content",
+        description.slice(0, 160)
+      );
+    }
+  }, [article]);
 
   if (!article) {
     return (
-      <SectionWrapper className="pt-32">
-        <div className="text-center py-20">
-          <h1 className="font-heading text-2xl text-midnight mb-4">Article not found</h1>
-          <Link to="/conveyancing/resources" className="text-golden hover:text-golden/80 text-sm">
-            &larr; Back to Conveyancing Resources
+      <SectionWrapper className="min-h-[55vh] pt-32">
+        <div className="py-20 text-center">
+          <h1 className="font-heading mb-4 text-2xl text-midnight">
+            Article not found
+          </h1>
+
+          <p className="mb-6 text-sm text-midnight/50">
+            This article may have been moved or is no longer available.
+          </p>
+
+          <Link
+            to="/articles"
+            className="text-sm text-golden hover:text-golden/80"
+          >
+            &larr; Back to Articles
           </Link>
         </div>
       </SectionWrapper>
     );
   }
 
-  const svc = article.service;
-  const isConveyancing = svc === 'conveyancing';
-  const isMortgage = svc === 'mortgage-finance';
-  const isBuyer = svc === 'buyer-advisory' || buyerArticles.some((g) => g.slug === slug);
-  const isPropertyManagement = svc === 'property-management';
+  const service = article.service;
 
-  const backLink = isConveyancing ? '/conveyancing/resources'
-    : isMortgage ? '/mortgage-finance/resources'
-    : isBuyer ? '/buyer-advisory/resources'
-    : isPropertyManagement ? '/property-management/resources'
-    : '/property-guides';
-  const backLabel = isConveyancing ? 'Conveyancing Resources'
-    : isMortgage ? 'Mortgage & Finance Resources'
-    : isBuyer ? 'Buyer Advisory Resources'
-    : isPropertyManagement ? 'Property Management Resources'
-    : 'Property Guides';
+  const isConveyancing = service === "conveyancing";
+  const isMortgage = service === "mortgage-finance";
+  const isBuyer = service === "buyer-advisory";
+  const isPropertyManagement = service === "property-management";
 
-  // SEO
-  if (article.seo_title) document.title = article.seo_title;
-  if (article.meta_description) {
-    let descEl = document.head.querySelector('meta[name="description"]');
-    if (!descEl) { descEl = document.createElement('meta'); document.head.appendChild(descEl); }
-    descEl.setAttribute('content', article.meta_description);
-  }
+  const backLink = "/articles";
+  const backLabel = "All Articles";
+
+  const articleSummary = article.summary || article.excerpt || "";
+  const articleBody =
+    article.body || article.content || "Article content coming soon.";
 
   const markdownComponents = {
     h2: ({ children, ...props }) => {
       const id = slugify(extractText(children));
-      return <h2 id={id} className="font-heading text-xl md:text-2xl text-midnight mt-10 mb-4 scroll-mt-24" {...props}>{children}</h2>;
+
+      return (
+        <h2
+          id={id}
+          className="font-heading mb-4 mt-10 scroll-mt-24 text-xl text-midnight md:text-2xl"
+          {...props}
+        >
+          {children}
+        </h2>
+      );
     },
+
     h3: ({ children, ...props }) => {
       const id = slugify(extractText(children));
-      return <h3 id={id} className="font-heading text-lg text-midnight mt-6 mb-2 scroll-mt-24" {...props}>{children}</h3>;
+
+      return (
+        <h3
+          id={id}
+          className="font-heading mb-2 mt-6 scroll-mt-24 text-lg text-midnight"
+          {...props}
+        >
+          {children}
+        </h3>
+      );
     },
-    p: ({ ...props }) => <p className="text-base text-midnight/70 leading-relaxed mb-4" {...props} />,
-    ul: ({ ...props }) => <ul className="list-disc pl-5 space-y-1.5 mb-4 text-midnight/70" {...props} />,
-    ol: ({ ...props }) => <ol className="list-decimal pl-5 space-y-1.5 mb-4 text-midnight/70" {...props} />,
-    li: ({ ...props }) => <li className="text-base text-midnight/70 leading-relaxed" {...props} />,
-    strong: ({ ...props }) => <strong className="text-midnight font-medium" {...props} />,
+
+    p: (props) => (
+      <p
+        className="mb-4 text-base leading-relaxed text-midnight/70"
+        {...props}
+      />
+    ),
+
+    ul: (props) => (
+      <ul
+        className="mb-4 list-disc space-y-1.5 pl-5 text-midnight/70"
+        {...props}
+      />
+    ),
+
+    ol: (props) => (
+      <ol
+        className="mb-4 list-decimal space-y-1.5 pl-5 text-midnight/70"
+        {...props}
+      />
+    ),
+
+    li: (props) => (
+      <li
+        className="text-base leading-relaxed text-midnight/70"
+        {...props}
+      />
+    ),
+
+    strong: (props) => (
+      <strong className="font-medium text-midnight" {...props} />
+    ),
+
     a: ({ href, children, ...props }) => {
-      if (href && href.startsWith('/')) {
-        return <Link to={href} className="text-golden hover:text-golden/80 underline transition-colors">{children}</Link>;
+      if (href?.startsWith("/")) {
+        return (
+          <Link
+            to={href}
+            className="text-golden underline transition-colors hover:text-golden/80"
+          >
+            {children}
+          </Link>
+        );
       }
-      return <a href={href} className="text-golden hover:text-golden/80 underline transition-colors" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
+
+      return (
+        <a
+          href={href}
+          className="text-golden underline transition-colors hover:text-golden/80"
+          target="_blank"
+          rel="noopener noreferrer"
+          {...props}
+        >
+          {children}
+        </a>
+      );
     },
-    blockquote: ({ ...props }) => <blockquote className="border-l-4 border-golden/40 pl-4 italic text-midnight/60 mb-4" {...props} />,
+
+    blockquote: (props) => (
+      <blockquote
+        className="mb-4 border-l-4 border-golden/40 pl-4 italic text-midnight/60"
+        {...props}
+      />
+    ),
   };
 
   return (
     <>
-      {/* Header */}
-      <section className="bg-parchment pt-28 pb-10 md:pt-32 md:pb-14">
-        <div className="max-w-3xl mx-auto px-6 lg:px-10">
-          <Link to={backLink} className="inline-flex items-center gap-2 text-sm text-midnight/50 hover:text-accent-navy transition-colors mb-8">
+      <section className="bg-parchment pb-10 pt-28 md:pb-14 md:pt-32">
+        <div className="mx-auto max-w-3xl px-6 lg:px-10">
+          <Link
+            to={backLink}
+            className="mb-8 inline-flex items-center gap-2 text-sm text-midnight/50 transition-colors hover:text-accent-navy"
+          >
             <ArrowLeft size={14} />
             {backLabel}
           </Link>
+
           {article.category && (
-            <p className="text-xs font-medium tracking-widest uppercase text-golden mb-4">{article.category}</p>
+            <p className="mb-4 text-xs font-medium uppercase tracking-widest text-golden">
+              {article.category}
+            </p>
           )}
-          <h1 className="font-heading text-3xl md:text-4xl lg:text-[2.75rem] font-light text-midnight leading-tight mb-4">
+
+          <h1 className="font-heading mb-4 text-3xl font-light leading-tight text-midnight md:text-4xl lg:text-[2.75rem]">
             {article.title}
           </h1>
-          {article.summary && (
-            <p className="text-base text-midnight/60 leading-relaxed">{article.summary}</p>
+
+          {articleSummary && (
+            <p className="text-base leading-relaxed text-midnight/60">
+              {articleSummary}
+            </p>
           )}
-          {(article.author || article.publish_date || article.reading_time) && (
+
+          {(article.author ||
+            article.publish_date ||
+            article.reading_time) && (
             <div className="mt-6 flex flex-wrap items-center gap-4 text-xs text-midnight/40">
               {article.author && (
                 <span className="flex items-center gap-1.5">
@@ -172,13 +325,15 @@ export default function ArticleDetail() {
                   {article.author}
                 </span>
               )}
+
               {article.publish_date && (
                 <span className="flex items-center gap-1.5">
                   <Calendar size={13} />
                   {formatDate(article.publish_date)}
                 </span>
               )}
-              {article.reading_time > 0 && (
+
+              {Number(article.reading_time) > 0 && (
                 <span className="flex items-center gap-1.5">
                   <Clock size={13} />
                   {article.reading_time} min read
@@ -189,69 +344,118 @@ export default function ArticleDetail() {
         </div>
       </section>
 
-      {/* Hero image */}
       {article.hero_image_url && (
         <section className="bg-parchment pb-10">
-          <div className="max-w-4xl mx-auto px-6 lg:px-10">
-            <img src={article.hero_image_url} alt={article.title} className="w-full rounded-xl object-cover aspect-[16/9]" />
+          <div className="mx-auto max-w-4xl px-6 lg:px-10">
+            <img
+              src={article.hero_image_url}
+              alt={article.title}
+              className="aspect-[16/9] w-full rounded-xl object-cover"
+            />
           </div>
         </section>
       )}
 
-      {/* Body + TOC */}
       <section className="bg-parchment pb-16 md:pb-24">
-        <div className="max-w-3xl mx-auto px-6 lg:px-10">
-          {article.table_of_contents && article.table_of_contents.length > 0 && (
-            <nav className="bg-stone/30 rounded-xl p-6 mb-10">
-              <p className="text-xs font-medium tracking-widest uppercase text-golden mb-4">Table of Contents</p>
-              <ul className="space-y-2">
-                {article.table_of_contents.map((item, i) => (
-                  <li key={i}>
-                    <a href={`#${item.anchor}`} className="text-sm text-accent-navy hover:text-golden transition-colors">
-                      {item.heading}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          )}
+        <div className="mx-auto max-w-3xl px-6 lg:px-10">
+          {Array.isArray(article.table_of_contents) &&
+            article.table_of_contents.length > 0 && (
+              <nav className="mb-10 rounded-xl bg-stone/30 p-6">
+                <p className="mb-4 text-xs font-medium uppercase tracking-widest text-golden">
+                  Table of Contents
+                </p>
 
-          <ReactMarkdown components={markdownComponents}>
-            {article.body}
-          </ReactMarkdown>
+                <ul className="space-y-2">
+                  {article.table_of_contents.map((item, index) => (
+                    <li key={`${item.anchor}-${index}`}>
+                      <a
+                        href={`#${item.anchor}`}
+                        className="text-sm text-accent-navy transition-colors hover:text-golden"
+                      >
+                        {item.heading}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+
+          {containsHtml(articleBody) ? (
+            <div
+              className="
+                article-content
+                text-base leading-relaxed text-midnight/70
+                [&_h2]:font-heading
+                [&_h2]:mb-4
+                [&_h2]:mt-10
+                [&_h2]:text-xl
+                [&_h2]:text-midnight
+                md:[&_h2]:text-2xl
+                [&_h3]:font-heading
+                [&_h3]:mb-2
+                [&_h3]:mt-6
+                [&_h3]:text-lg
+                [&_h3]:text-midnight
+                [&_p]:mb-4
+                [&_ul]:mb-4
+                [&_ul]:list-disc
+                [&_ul]:space-y-1.5
+                [&_ul]:pl-5
+                [&_ol]:mb-4
+                [&_ol]:list-decimal
+                [&_ol]:space-y-1.5
+                [&_ol]:pl-5
+                [&_strong]:font-medium
+                [&_strong]:text-midnight
+                [&_a]:text-golden
+                [&_a]:underline
+              "
+              dangerouslySetInnerHTML={{ __html: articleBody }}
+            />
+          ) : (
+            <ReactMarkdown components={markdownComponents}>
+              {articleBody}
+            </ReactMarkdown>
+          )}
         </div>
       </section>
 
-      {/* FAQ */}
-      {article.faq_items && article.faq_items.length > 0 && (
-        <SectionWrapper bg="bg-white">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="font-heading text-2xl text-midnight mb-8">Frequently Asked Questions</h2>
-            <FAQAccordion items={article.faq_items} />
-          </div>
-        </SectionWrapper>
-      )}
+      {Array.isArray(article.faq_items) &&
+        article.faq_items.length > 0 && (
+          <SectionWrapper bg="bg-white">
+            <div className="mx-auto max-w-3xl">
+              <h2 className="font-heading mb-8 text-2xl text-midnight">
+                Frequently Asked Questions
+              </h2>
 
-      {/* Related */}
+              <FAQAccordion items={article.faq_items} />
+            </div>
+          </SectionWrapper>
+        )}
+
       {related.length > 0 && (
         <SectionWrapper>
-          <h2 className="font-heading text-xl text-midnight mb-8">Related Articles</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {related.map((r) => (
+          <h2 className="font-heading mb-8 text-xl text-midnight">
+            Related Articles
+          </h2>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {related.map((relatedArticle) => (
               <GuideCard
-                key={r.id || r.slug}
-                title={r.title}
-                category={r.category || article.category}
-                summary={r.summary}
-                slug={r.slug}
-                imageUrl={r.hero_image_url}
+                key={relatedArticle.id || relatedArticle.slug}
+                title={relatedArticle.title}
+                category={relatedArticle.category || article.category}
+                summary={
+                  relatedArticle.summary || relatedArticle.excerpt
+                }
+                slug={relatedArticle.slug}
+                imageUrl={relatedArticle.hero_image_url}
               />
             ))}
           </div>
         </SectionWrapper>
       )}
 
-      {/* CTA */}
       {isConveyancing ? (
         <CTABanner
           title="Need help with your property transaction?"
