@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Search } from "lucide-react";
 
 import SectionWrapper from "@/components/origin/SectionWrapper";
 import GuideCard from "@/components/origin/GuideCard";
@@ -18,6 +19,20 @@ const SERVICE_ORDER = [
   "conveyancing",
   "mortgage-finance",
 ];
+
+const SERVICE_RESOURCE_LINKS = {
+  "buyer-advisory": "/buyer-advisory/resources",
+  "property-management": "/property-management/resources",
+  conveyancing: "/conveyancing/resources",
+  "mortgage-finance": "/mortgage-finance/resources",
+};
+
+const SERVICE_RESOURCE_LABELS = {
+  "buyer-advisory": "Buyer Advisory Knowledge Centre",
+  "property-management": "Property Owner Knowledge Centre",
+  conveyancing: "Conveyancing Knowledge Centre",
+  "mortgage-finance": "Mortgage & Finance Knowledge Centre",
+};
 
 export default function Articles() {
   const [query, setQuery] = useState("");
@@ -56,12 +71,12 @@ export default function Articles() {
   }, []);
 
   const publishedArticles = useMemo(() => {
-    return articlesData
-      .filter((article) => article.status === "published")
+    return (Array.isArray(articlesData) ? articlesData : [])
+      .filter((article) => !article.status || article.status === "published")
       .sort(
         (a, b) =>
-          new Date(b.publish_date).getTime() -
-          new Date(a.publish_date).getTime()
+          new Date(b.publish_date || 0).getTime() -
+          new Date(a.publish_date || 0).getTime()
       );
   }, []);
 
@@ -92,6 +107,9 @@ export default function Articles() {
     return [...orderedServices, ...remainingServices].map((service) => ({
       service,
       label: SERVICE_LABELS[service] || service,
+      resourceLabel:
+        SERVICE_RESOURCE_LABELS[service] || "Service Knowledge Centre",
+      resourceLink: SERVICE_RESOURCE_LINKS[service] || "/articles",
       articles: groupedMap[service],
     }));
   }, [publishedArticles]);
@@ -136,7 +154,7 @@ export default function Articles() {
           </h1>
 
           <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-midnight/60">
-            Explore practical guidance on buying property, property management,
+            Explore practical guidance across buyer advisory, property ownership,
             conveyancing and mortgage finance.
           </p>
 
@@ -201,40 +219,52 @@ export default function Articles() {
             </p>
 
             <p className="text-sm leading-relaxed text-midnight/50">
-              We are curating practical property articles for you.
+              We are preparing practical property articles for you.
             </p>
           </div>
         ) : (
           <div className="space-y-20">
-            {groupedArticles.map(({ service, label, articles }) => (
-              <section key={service}>
-                <div className="mb-8 flex items-baseline gap-4">
-                  <h2 className="font-heading text-2xl font-light text-midnight md:text-3xl">
-                    {label}
-                  </h2>
+            {groupedArticles.map(
+              ({ service, label, resourceLabel, resourceLink, articles }) => (
+                <section key={service}>
+                  <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="flex flex-wrap items-baseline gap-4">
+                      <h2 className="font-heading text-2xl font-light text-midnight md:text-3xl">
+                        {label}
+                      </h2>
 
-                  <span className="text-xs tracking-wider text-midnight/30">
-                    {articles.length}{" "}
-                    {articles.length === 1 ? "article" : "articles"}
-                  </span>
-                </div>
+                      <span className="text-xs tracking-wider text-midnight/30">
+                        {articles.length}{" "}
+                        {articles.length === 1 ? "article" : "articles"}
+                      </span>
+                    </div>
 
-                <div className="mb-10 h-px w-full bg-stone" />
+                    <Link
+                      to={resourceLink}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-golden transition-colors hover:text-golden/75"
+                    >
+                      {resourceLabel}
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
 
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-                  {articles.map((article) => (
-                    <GuideCard
-                      key={article.id || article.slug}
-                      title={article.title}
-                      category={article.category}
-                      summary={article.summary || article.excerpt}
-                      slug={article.slug}
-                      imageUrl={article.hero_image_url}
-                    />
-                  ))}
-                </div>
-              </section>
-            ))}
+                  <div className="mb-10 h-px w-full bg-stone" />
+
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+                    {articles.map((article) => (
+                      <GuideCard
+                        key={article.id || article.slug}
+                        title={article.title}
+                        category={article.category}
+                        summary={article.summary || article.excerpt}
+                        slug={article.slug}
+                        imageUrl={article.hero_image_url}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )
+            )}
           </div>
         )}
       </SectionWrapper>
