@@ -4,7 +4,18 @@ import { Search } from "lucide-react";
 
 import SectionWrapper from "@/components/origin/SectionWrapper";
 import GuideCard from "@/components/origin/GuideCard";
-import articlesData from "@/data/articles";
+import { publishedKnowledgeItems } from "@/data/knowledgeCentre";
+
+const formatDate = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
 
 export default function ResourceHub({
   seoTitle,
@@ -23,13 +34,15 @@ export default function ResourceHub({
   useEffect(() => {
     document.title = seoTitle;
 
-    const setMeta = (selector, attr, content) => {
+    const setMeta = (selector, attribute, content) => {
       let element = document.head.querySelector(selector);
+
       if (!element) {
         element = document.createElement("meta");
         document.head.appendChild(element);
       }
-      element.setAttribute(attr, content);
+
+      element.setAttribute(attribute, content);
     };
 
     setMeta('meta[name="description"]', "content", metaDescription);
@@ -37,61 +50,64 @@ export default function ResourceHub({
     setMeta('meta[property="og:description"]', "content", metaDescription);
   }, [seoTitle, metaDescription]);
 
-  const articles = useMemo(() => {
-    return (Array.isArray(articlesData) ? articlesData : [])
-      .filter(
-        (article) =>
-          article.service === service &&
-          (!article.status || article.status === "published")
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.publish_date || 0).getTime() -
-          new Date(a.publish_date || 0).getTime()
-      );
-  }, [service]);
+  const serviceItems = useMemo(
+    () =>
+      publishedKnowledgeItems.filter(
+        (item) => item.service === service
+      ),
+    [service]
+  );
 
-  const filteredArticles = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return articles;
+  const filteredItems = useMemo(() => {
+    const term = query.trim().toLowerCase();
 
-    return articles.filter((article) =>
+    if (!term) {
+      return serviceItems;
+    }
+
+    return serviceItems.filter((item) =>
       [
-        article.title,
-        article.category,
-        article.summary,
-        article.excerpt,
-        article.body,
-        ...(article.tags || []),
-      ]
-        .map((field) => String(field || "").toLowerCase())
-        .some((field) => field.includes(q))
+        item.title,
+        item.category,
+        item.summary,
+        item.excerpt,
+        item.body,
+        ...(item.tags || []),
+      ].some((field) =>
+        String(field || "").toLowerCase().includes(term)
+      )
     );
-  }, [query, articles]);
+  }, [query, serviceItems]);
 
-  const sections = useMemo(() => {
-    const grouped = {};
+  const groupedSections = useMemo(() => {
+    const groups = {};
 
-    filteredArticles.forEach((article) => {
-      const category = article.category || "General";
-      if (!grouped[category]) grouped[category] = [];
-      grouped[category].push(article);
+    filteredItems.forEach((item) => {
+      const category = item.category || "General";
+
+      if (!groups[category]) {
+        groups[category] = [];
+      }
+
+      groups[category].push(item);
     });
 
     const ordered = [
-      ...categoryOrder.filter((category) => grouped[category]?.length),
-      ...Object.keys(grouped).filter((category) => !categoryOrder.includes(category)),
+      ...categoryOrder.filter((category) => groups[category]?.length),
+      ...Object.keys(groups).filter(
+        (category) => !categoryOrder.includes(category)
+      ),
     ];
 
     return ordered.map((category) => ({
       section: category,
-      articles: grouped[category],
+      items: groups[category],
     }));
-  }, [filteredArticles, categoryOrder]);
+  }, [filteredItems, categoryOrder]);
 
   return (
     <>
-      <section className="relative overflow-hidden pb-8 pt-28 md:pb-10 md:pt-32">
+      <section className="relative overflow-hidden pb-9 pt-28 md:pb-11 md:pt-32">
         {bannerImage && (
           <img
             src={bannerImage}
@@ -99,16 +115,19 @@ export default function ResourceHub({
             className="absolute inset-0 h-full w-full object-cover"
           />
         )}
+
         <div className={`absolute inset-0 ${overlayClass}`} />
 
-        <div className="relative mx-auto max-w-3xl px-6 text-center lg:px-10">
+        <div className="relative z-10 mx-auto max-w-3xl px-6 text-center lg:px-10">
           <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-golden">
             Resources
           </p>
+
           <h1 className="font-heading mb-2 text-3xl leading-tight text-parchment md:text-4xl">
             {title}
           </h1>
-          <p className="mx-auto mb-6 max-w-xl text-sm leading-relaxed text-parchment/70">
+
+          <p className="mx-auto mb-6 max-w-2xl text-sm leading-relaxed text-parchment/75 md:text-base">
             {subtitle}
           </p>
 
@@ -117,33 +136,37 @@ export default function ResourceHub({
               size={16}
               className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-midnight/30"
             />
+
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full rounded-full border-0 bg-white py-3.5 pl-11 pr-4 text-sm text-midnight shadow-lg focus:outline-none focus:ring-2 focus:ring-golden/50"
+              aria-label={searchPlaceholder}
+              className="w-full rounded-full border-0 bg-white py-3.5 pl-11 pr-4 text-sm text-midnight shadow-lg outline-none focus:ring-2 focus:ring-golden/50"
             />
           </div>
         </div>
       </section>
 
-      <SectionWrapper className="!pb-20 !pt-16 md:!pb-28 md:!pt-20">
-        {filteredArticles.length === 0 ? (
-          <div className="mx-auto max-w-lg py-20 text-center">
-            <p className="font-heading mb-3 text-xl font-light text-midnight md:text-2xl">
+      <SectionWrapper className="!pb-20 !pt-12 md:!pb-28 md:!pt-16">
+        {filteredItems.length === 0 ? (
+          <div className="mx-auto max-w-lg py-16 text-center">
+            <h2 className="font-heading mb-3 text-2xl font-light text-midnight">
               {query ? "No matching resources" : "Coming soon"}
-            </p>
+            </h2>
+
             <p className="text-sm leading-relaxed text-midnight/50">
               {query
-                ? `No resources found for “${query}”.`
+                ? `No resources matched “${query}”. Try another search term.`
                 : "We are preparing practical resources for this knowledge centre."}
             </p>
+
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                className="mt-4 text-sm text-golden hover:underline"
+                className="mt-5 text-sm font-medium text-golden hover:underline"
               >
                 Clear search
               </button>
@@ -151,28 +174,31 @@ export default function ResourceHub({
           </div>
         ) : (
           <div className="space-y-16">
-            {sections.map(({ section, articles }) => (
+            {groupedSections.map(({ section, items }) => (
               <section key={section}>
-                <div className="mb-8 flex items-baseline gap-4">
+                <div className="mb-7 flex flex-wrap items-baseline gap-4">
                   <h2 className="font-heading text-2xl font-light text-midnight md:text-3xl">
                     {section}
                   </h2>
+
                   <span className="text-xs tracking-wider text-midnight/30">
-                    {articles.length} {articles.length === 1 ? "resource" : "resources"}
+                    {items.length} {items.length === 1 ? "resource" : "resources"}
                   </span>
                 </div>
-                <div className="mb-10 h-px w-full bg-stone" />
+
+                <div className="mb-9 h-px w-full bg-stone" />
+
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-                  {articles.map((article) => (
+                  {items.map((item) => (
                     <GuideCard
-                      key={article.id || article.slug}
-                      title={article.title}
-                      category={article.category}
-                      summary={article.summary || article.excerpt}
-                      slug={article.slug}
-                      imageUrl={article.hero_image_url}
-                      publishDate={article.publish_date}
-                      readingTime={article.reading_time}
+                      key={item.id || item.slug}
+                      title={item.title}
+                      category={item.category}
+                      summary={item.summary || item.excerpt}
+                      slug={item.slug}
+                      imageUrl={item.hero_image_url}
+                      readingTime={item.reading_time}
+                      publishDate={formatDate(item.publish_date)}
                     />
                   ))}
                 </div>
@@ -183,23 +209,24 @@ export default function ResourceHub({
       </SectionWrapper>
 
       {cta && (
-        <section className="bg-accent-navy py-6 md:py-8">
-          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 md:flex-row lg:px-10">
+        <section className="bg-accent-navy py-7 md:py-9">
+          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 px-6 md:flex-row lg:px-10">
             <div className="text-center md:text-left">
-              <h2 className="font-heading text-lg font-light leading-tight text-parchment md:text-xl">
+              <h2 className="font-heading text-xl font-light leading-tight text-parchment">
                 {cta.title}
               </h2>
+
               {cta.subtitle && (
-                <p className="mx-auto mt-1 max-w-lg text-xs leading-relaxed text-parchment/60 md:mx-0 md:text-sm">
+                <p className="mt-1 max-w-lg text-sm leading-relaxed text-parchment/65">
                   {cta.subtitle}
                 </p>
               )}
             </div>
 
             <div className="flex flex-col items-center gap-3 sm:flex-row">
-              {cta.buttons.map((button) => (
+              {(cta.buttons || []).map((button) => (
                 <Link
-                  key={button.label}
+                  key={`${button.label}-${button.link}`}
                   to={button.link}
                   className={
                     button.variant === "outline"
