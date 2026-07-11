@@ -1,11 +1,12 @@
 import React from "react";
 import { RotateCcw } from "lucide-react";
+import LegalConsent from "@/components/origin/LegalConsent";
 
 const BUYER_TYPES = ["First Home Buyer", "Owner Occupier", "Investor"];
 
 export default function PropertyDetailsForm({ values, onChange, onSubmit, started, onRestart }) {
   const set = (field) => (e) => onChange({ ...values, [field]: e.target.value });
-  const canSubmit = values.address && values.contractDate && values.settlementDate && values.buyerType;
+  const canSubmit = values.legalConsent && values.address && values.contractDate && values.settlementDate && values.buyerType;
 
   const inputClass =
     "w-full rounded-xl border border-stone bg-parchment/40 px-4 py-3 text-sm text-midnight placeholder:text-midnight/30 focus:outline-none focus:border-golden/50 focus:ring-2 focus:ring-golden/10 transition";
@@ -46,6 +47,26 @@ export default function PropertyDetailsForm({ values, onChange, onSubmit, starte
           </div>
         </div>
       </div>
+
+      <LegalConsent
+        id="buyer-tracker-legal-consent"
+        checked={Boolean(values.legalConsent)}
+        onChange={(checked) =>
+          onChange({
+            ...values,
+            legalConsent: checked,
+            legalConsentAt: checked ? new Date().toISOString() : null,
+          })
+        }
+        marketingChecked={Boolean(values.marketingConsent)}
+        onMarketingChange={(checked) =>
+          onChange({
+            ...values,
+            marketingConsent: checked,
+            marketingConsentAt: checked ? new Date().toISOString() : null,
+          })
+        }
+      />
 
       <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
         <button

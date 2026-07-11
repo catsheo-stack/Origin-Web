@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
+import LegalConsent, {
+  LEGAL_CONSENT_VERSION,
+  MARKETING_CONSENT_VERSION,
+} from "@/components/origin/LegalConsent";
 
 const serviceOptions = [
   "Buyer Agent / Buyer Advisory",
@@ -37,6 +41,8 @@ export default function ContactEnquiryForm({ intent = {} }) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [legalConsent, setLegalConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [form, setForm] = useState({
     full_name: "",
     email: "",
@@ -54,10 +60,30 @@ export default function ContactEnquiryForm({ intent = {} }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!legalConsent) {
+      toast({
+        title: "Consent required",
+        description: "Please acknowledge the Privacy Policy, Terms of Use and Professional Services & Referral Disclaimer before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSubmitting(true);
     try {
       await base44.entities.Lead.create({
         ...form,
+        legal_consent: true,
+        legal_consent_version: LEGAL_CONSENT_VERSION,
+        legal_consent_at: new Date().toISOString(),
+        marketing_consent: marketingConsent,
+        marketing_consent_version: marketingConsent
+          ? MARKETING_CONSENT_VERSION
+          : null,
+        marketing_consent_at: marketingConsent
+          ? new Date().toISOString()
+          : null,
+
         source_page: "contact",
         service_type: intent.service_type,
         lead_source: intent.lead_source,
@@ -106,9 +132,17 @@ export default function ContactEnquiryForm({ intent = {} }) {
         <SelectField label="Preferred contact method" value={form.preferred_contact} onChange={(v) => update("preferred_contact", v)} options={contactMethods} />
       </div>
 
+      <LegalConsent
+        id="contact-legal-consent"
+        checked={legalConsent}
+        onChange={setLegalConsent}
+        marketingChecked={marketingConsent}
+        onMarketingChange={setMarketingConsent}
+      />
+
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || !legalConsent}
         className="mt-8 w-full bg-golden text-midnight font-medium text-sm py-4 rounded-full hover:bg-golden/90 transition-colors disabled:opacity-50"
       >
         {submitting ? "Sending..." : "Send My Enquiry"}

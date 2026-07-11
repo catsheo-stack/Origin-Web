@@ -1,5 +1,6 @@
 import React from "react";
 import { RotateCcw } from "lucide-react";
+import LegalConsent from "@/components/origin/LegalConsent";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const SELLER_TYPES = ["Owner Occupier", "Investor"];
@@ -7,7 +8,7 @@ const PROPERTY_TYPES = ["House", "Apartment", "Townhouse", "Unit", "Other"];
 
 export default function SellerPropertyDetailsForm({ values, onChange, onSubmit, started, onRestart }) {
   const set = (field) => (e) => onChange({ ...values, [field]: e.target.value });
-  const canSubmit = values.address && values.contractDate && values.settlementDate && values.propertyType && values.sellerType;
+  const canSubmit = values.legalConsent && values.address && values.contractDate && values.settlementDate && values.propertyType && values.sellerType;
 
   const inputClass =
     "w-full rounded-xl border border-stone bg-parchment/40 px-4 py-3 text-sm text-midnight placeholder:text-midnight/30 focus:outline-none focus:border-golden/50 focus:ring-2 focus:ring-golden/10 transition";
@@ -61,6 +62,26 @@ export default function SellerPropertyDetailsForm({ values, onChange, onSubmit, 
           </div>
         </div>
       </div>
+
+      <LegalConsent
+        id="seller-tracker-legal-consent"
+        checked={Boolean(values.legalConsent)}
+        onChange={(checked) =>
+          onChange({
+            ...values,
+            legalConsent: checked,
+            legalConsentAt: checked ? new Date().toISOString() : null,
+          })
+        }
+        marketingChecked={Boolean(values.marketingConsent)}
+        onMarketingChange={(checked) =>
+          onChange({
+            ...values,
+            marketingConsent: checked,
+            marketingConsentAt: checked ? new Date().toISOString() : null,
+          })
+        }
+      />
 
       <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
         <button

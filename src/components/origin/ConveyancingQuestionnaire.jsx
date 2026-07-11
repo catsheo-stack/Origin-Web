@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
+import LegalConsent, {
+  LEGAL_CONSENT_VERSION,
+  MARKETING_CONSENT_VERSION,
+} from "@/components/origin/LegalConsent";
 import { ArrowLeft } from "lucide-react";
 
 const transactionTypeOptions = ["Buying", "Selling", "Transferring property", "Not sure yet", "Other"];
@@ -15,6 +19,8 @@ export default function ConveyancingQuestionnaire({ onBack }) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [legalConsent, setLegalConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [form, setForm] = useState({
     transaction_type: "",
     other_transaction_type: "",
@@ -35,6 +41,15 @@ export default function ConveyancingQuestionnaire({ onBack }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!legalConsent) {
+      toast({
+        title: "Consent required",
+        description: "Please acknowledge the Privacy Policy, Terms of Use and Professional Services & Referral Disclaimer before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSubmitting(true);
     try {
       const resolvedTransaction = form.transaction_type === "Other" && form.other_transaction_type.trim()
@@ -61,6 +76,17 @@ export default function ConveyancingQuestionnaire({ onBack }) {
         service_type: "conveyancing",
         lead_source: "conveyancing-page",
         form_type: "conveyancing-questionnaire",
+        legal_consent: true,
+        legal_consent_version: LEGAL_CONSENT_VERSION,
+        legal_consent_at: new Date().toISOString(),
+        marketing_consent: marketingConsent,
+        marketing_consent_version: marketingConsent
+          ? MARKETING_CONSENT_VERSION
+          : null,
+        marketing_consent_at: marketingConsent
+          ? new Date().toISOString()
+          : null,
+
         source_page: "conveyancing-page",
       });
 
@@ -126,9 +152,17 @@ export default function ConveyancingQuestionnaire({ onBack }) {
         <SelectField label="Preferred contact method" value={form.preferred_contact} onChange={(v) => update("preferred_contact", v)} options={contactMethods} />
       </div>
 
+      <LegalConsent
+        id="conveyancing-legal-consent"
+        checked={legalConsent}
+        onChange={setLegalConsent}
+        marketingChecked={marketingConsent}
+        onMarketingChange={setMarketingConsent}
+      />
+
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || !legalConsent}
         className="mt-8 w-full bg-golden text-midnight font-medium text-sm py-4 rounded-full hover:bg-golden/90 transition-colors disabled:opacity-50"
       >
         {submitting ? "Sending..." : "Get My Conveyancing Guidance"}

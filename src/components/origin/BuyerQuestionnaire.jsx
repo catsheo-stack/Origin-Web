@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
 import { useToast } from "@/components/ui/use-toast";
+import LegalConsent, {
+  LEGAL_CONSENT_VERSION,
+  MARKETING_CONSENT_VERSION,
+} from "@/components/origin/LegalConsent";
 
 const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
 
@@ -75,6 +79,8 @@ export default function BuyerQuestionnaire({ onBack }) {
   const navigate = useNavigate();
 
   const [submitting, setSubmitting] = useState(false);
+  const [legalConsent, setLegalConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
 
   const update = (field, value) => {
@@ -86,6 +92,15 @@ export default function BuyerQuestionnaire({ onBack }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!legalConsent) {
+      toast({
+        title: "Consent required",
+        description: "Please acknowledge the Privacy Policy, Terms of Use and Professional Services & Referral Disclaimer before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (submitting) return;
 
@@ -147,6 +162,17 @@ export default function BuyerQuestionnaire({ onBack }) {
         from_name: "Origin Property Concierge Website",
 
         form_name: "Buyer Advisory Questionnaire",
+        legal_consent: true,
+        legal_consent_version: LEGAL_CONSENT_VERSION,
+        legal_consent_at: new Date().toISOString(),
+        marketing_consent: marketingConsent,
+        marketing_consent_version: marketingConsent
+          ? MARKETING_CONSENT_VERSION
+          : null,
+        marketing_consent_at: marketingConsent
+          ? new Date().toISOString()
+          : null,
+
         service_required: "Buyer Advisory",
         lead_source: "Origin Buyer Advisory Page",
 
@@ -206,6 +232,8 @@ export default function BuyerQuestionnaire({ onBack }) {
       }
 
       setForm(INITIAL_FORM);
+      setLegalConsent(false);
+      setMarketingConsent(false);
 
       toast({
         title: "Details received",
@@ -428,9 +456,17 @@ export default function BuyerQuestionnaire({ onBack }) {
         />
       </div>
 
+      <LegalConsent
+        id="buyer-legal-consent"
+        checked={legalConsent}
+        onChange={setLegalConsent}
+        marketingChecked={marketingConsent}
+        onMarketingChange={setMarketingConsent}
+      />
+
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || !legalConsent}
         className="mt-8 w-full rounded-full bg-golden py-4 text-sm font-medium text-midnight transition-colors hover:bg-golden/90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {submitting

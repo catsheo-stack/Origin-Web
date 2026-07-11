@@ -4,6 +4,10 @@ import { ArrowLeft } from "lucide-react";
 
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
+import LegalConsent, {
+  LEGAL_CONSENT_VERSION,
+  MARKETING_CONSENT_VERSION,
+} from "@/components/origin/LegalConsent";
 import AddressAutocomplete from "@/components/origin/AddressAutocomplete";
 
 const propertyGoalOptions = [
@@ -92,6 +96,8 @@ export default function LeadForm({
   const navigate = useNavigate();
 
   const [submitting, setSubmitting] = useState(false);
+  const [legalConsent, setLegalConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
 
   const update = (field, value) => {
@@ -173,6 +179,15 @@ export default function LeadForm({
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (!legalConsent) {
+      toast({
+        title: "Consent required",
+        description: "Please acknowledge the Privacy Policy, Terms of Use and Professional Services & Referral Disclaimer before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (submitting) return;
 
     setSubmitting(true);
@@ -226,6 +241,17 @@ export default function LeadForm({
         service_required: form.property_goal,
         service_type: leadIntent,
         lead_source: sourcePage,
+        legal_consent: true,
+        legal_consent_version: LEGAL_CONSENT_VERSION,
+        legal_consent_at: new Date().toISOString(),
+        marketing_consent: marketingConsent,
+        marketing_consent_version: marketingConsent
+          ? MARKETING_CONSENT_VERSION
+          : null,
+        marketing_consent_at: marketingConsent
+          ? new Date().toISOString()
+          : null,
+
         source_page: sourcePage,
         form_type: "property-owner-consultation",
       };
@@ -468,9 +494,17 @@ export default function LeadForm({
         respond in the way that suits you best.
       </p>
 
+      <LegalConsent
+        id="lead-legal-consent"
+        checked={legalConsent}
+        onChange={setLegalConsent}
+        marketingChecked={marketingConsent}
+        onMarketingChange={setMarketingConsent}
+      />
+
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || !legalConsent}
         className="mt-8 w-full rounded-full bg-golden py-4 text-sm font-medium text-midnight transition-colors hover:bg-golden/90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {submitting
