@@ -13,13 +13,14 @@ export default function LegalConsent({
   marketingId = `${id}-marketing`,
 }) {
   return (
-    <div className="mt-8 space-y-3">
-      <div className="rounded-xl border border-stone/70 bg-parchment/45 p-4 md:p-5">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-midnight/70">
-            Privacy, terms &amp; professional disclaimer
+    <div className="mt-6 space-y-3">
+      <div className="rounded-xl border border-stone/70 bg-parchment/35 p-4">
+        <div className="mb-2.5 flex items-center justify-between gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-midnight/65">
+            Required Consent
           </p>
-          <span className="rounded-full bg-midnight px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-parchment">
+
+          <span className="rounded-full border border-golden/40 bg-golden/5 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-golden">
             Required
           </span>
         </div>
@@ -35,50 +36,47 @@ export default function LegalConsent({
             className="mt-1 h-4 w-4 shrink-0 rounded border-stone text-golden accent-golden focus:ring-golden/30"
           />
 
-          <span className="text-xs leading-5 text-midnight/65 md:text-[13px]">
-            I acknowledge the{" "}
+          <span className="text-[12px] leading-5 text-midnight/65 md:text-[12.5px]">
+            I accept the{" "}
             <Link
               to="/privacy-policy"
               target="_blank"
               rel="noreferrer"
-              className="font-medium text-accent-navy underline decoration-stone underline-offset-2 hover:text-golden"
+              className="font-medium text-accent-navy underline decoration-stone underline-offset-2 transition-colors hover:text-golden"
             >
               Privacy Policy
             </Link>
-            ,{" "}
+            {" • "}
             <Link
               to="/terms-of-use"
               target="_blank"
               rel="noreferrer"
-              className="font-medium text-accent-navy underline decoration-stone underline-offset-2 hover:text-golden"
+              className="font-medium text-accent-navy underline decoration-stone underline-offset-2 transition-colors hover:text-golden"
             >
               Terms of Use
-            </Link>{" "}
-            and{" "}
+            </Link>
+            {" • "}
             <Link
               to="/professional-disclaimer"
               target="_blank"
               rel="noreferrer"
-              className="font-medium text-accent-navy underline decoration-stone underline-offset-2 hover:text-golden"
+              className="font-medium text-accent-navy underline decoration-stone underline-offset-2 transition-colors hover:text-golden"
             >
-              Professional Services &amp; Referral Disclaimer
+              Professional Disclaimer
             </Link>
-            . I understand that Origin Property Concierge coordinates services
-            and referrals and does not itself provide regulated professional
-            advice. I consent to Origin using my information to respond to this
-            enquiry and, where appropriate, sharing relevant information with
-            appropriately licensed or qualified independent professionals to
-            assist with my request.
+            , and consent to Origin Property Concierge using my information to
+            respond to my request.
           </span>
         </label>
       </div>
 
-      <div className="rounded-xl border border-stone/70 bg-white/70 p-4 md:p-5">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-midnight/70">
-            Stay connected
+      <div className="rounded-xl border border-stone/70 bg-white/65 p-4">
+        <div className="mb-2.5 flex items-center justify-between gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-midnight/65">
+            Stay Updated
           </p>
-          <span className="rounded-full border border-stone bg-white px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-midnight/50">
+
+          <span className="rounded-full border border-stone bg-white px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-midnight/40">
             Optional
           </span>
         </div>
@@ -96,11 +94,9 @@ export default function LegalConsent({
             className="mt-1 h-4 w-4 shrink-0 rounded border-stone text-golden accent-golden focus:ring-golden/30"
           />
 
-          <span className="text-xs leading-5 text-midnight/65 md:text-[13px]">
-            Keep me updated with Origin property insights, educational guides,
-            service and platform updates, and occasional marketing
-            communications. I understand this is optional and I can unsubscribe
-            at any time.
+          <span className="text-[12px] leading-5 text-midnight/60 md:text-[12.5px]">
+            Send me property insights, guides and occasional updates. I can
+            unsubscribe at any time.
           </span>
         </label>
       </div>
