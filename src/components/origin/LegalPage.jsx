@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Mail } from "lucide-react";
 
@@ -47,6 +47,14 @@ export default function LegalPage({
   children,
 }) {
   const [readingProgress, setReadingProgress] = useState(0);
+  const [activeSection, setActiveSection] = useState(
+    sections.length > 0 ? sections[0].id : ""
+  );
+
+  const sectionIds = useMemo(
+    () => sections.map((section) => section.id),
+    [sections]
+  );
 
   useEffect(() => {
     document.title = `${title} | Origin Property Concierge`;
@@ -78,7 +86,6 @@ export default function LegalPage({
     window.addEventListener("scroll", updateReadingProgress, {
       passive: true,
     });
-
     window.addEventListener("resize", updateReadingProgress);
 
     return () => {
@@ -86,6 +93,61 @@ export default function LegalPage({
       window.removeEventListener("resize", updateReadingProgress);
     };
   }, []);
+
+  useEffect(() => {
+    if (sectionIds.length === 0) {
+      setActiveSection("");
+      return undefined;
+    }
+
+    const sectionElements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+
+    if (sectionElements.length === 0) {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+        if (visibleEntries.length > 0) {
+          setActiveSection(visibleEntries[0].target.id);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "-120px 0px -65% 0px",
+        threshold: [0, 0.1, 0.25, 0.5],
+      }
+    );
+
+    sectionElements.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, [sectionIds]);
+
+  const handleSectionClick = (event, sectionId) => {
+    event.preventDefault();
+
+    const target = document.getElementById(sectionId);
+
+    if (!target) {
+      return;
+    }
+
+    setActiveSection(sectionId);
+
+    target.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+
+    window.history.replaceState(null, "", `#${sectionId}`);
+  };
 
   return (
     <>
@@ -122,7 +184,7 @@ export default function LegalPage({
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 lg:grid-cols-[240px_minmax(0,1fr)] lg:px-10 lg:py-16">
+      <div className="mx-auto grid max-w-[84rem] gap-10 px-6 py-12 lg:grid-cols-[250px_minmax(0,1fr)] lg:px-10 lg:py-16">
         <aside className="hidden lg:sticky lg:top-28 lg:block lg:self-start">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-golden">
             On this page
@@ -133,21 +195,33 @@ export default function LegalPage({
             aria-label={`${title} sections`}
           >
             <ul className="space-y-2.5">
-              {sections.map((section) => (
-                <li key={section.id}>
-                  <a
-                    href={`#${section.id}`}
-                    className="block text-sm leading-5 text-midnight/60 transition-colors hover:text-accent-navy"
-                  >
-                    {section.title}
-                  </a>
-                </li>
-              ))}
+              {sections.map((section) => {
+                const isActive = activeSection === section.id;
+
+                return (
+                  <li key={section.id}>
+                    <a
+                      href={`#${section.id}`}
+                      onClick={(event) =>
+                        handleSectionClick(event, section.id)
+                      }
+                      aria-current={isActive ? "location" : undefined}
+                      className={`block border-l-2 py-0.5 pl-3 text-sm leading-5 transition-all ${
+                        isActive
+                          ? "-ml-[18px] border-golden font-medium text-golden"
+                          : "-ml-[18px] border-transparent text-midnight/60 hover:border-stone hover:text-accent-navy"
+                      }`}
+                    >
+                      {section.title}
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
         </aside>
 
-        <article className="min-w-0 space-y-10 rounded-2xl border border-stone/70 bg-white/55 p-6 shadow-sm md:p-10 lg:p-12">
+        <article className="min-w-0 space-y-10 rounded-2xl border border-stone/70 bg-white/55 p-6 shadow-sm md:p-10 lg:p-12 xl:p-14">
           {children}
 
           <section className="border-t border-stone/70 pt-8">
