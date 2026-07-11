@@ -33,9 +33,6 @@ import OriginHomeBuyingPlanner from '@/pages/tools/OriginHomeBuyingPlanner';
 import BuyerSettlementTracker from '@/pages/tools/BuyerSettlementTracker';
 import SellerSettlementTracker from '@/pages/tools/SellerSettlementTracker';
 import About from '@/pages/About';
-import PrivacyPolicy from '@/pages/PrivacyPolicy';
-import TermsOfUse from '@/pages/TermsOfUse';
-import ProfessionalDisclaimer from '@/pages/ProfessionalDisclaimer';
 import AdminArticles from '@/pages/admin/AdminArticles';
 import AdminRoute from '@/components/AdminRoute';
 import Login from '@/pages/Login';
@@ -102,9 +99,6 @@ const AuthenticatedApp = () => {
         <Route path="/guides" element={<Guides />} />
         <Route path="/tools" element={<Tools />} />
         <Route path="/about" element={<About />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-of-use" element={<TermsOfUse />} />
-        <Route path="/professional-disclaimer" element={<ProfessionalDisclaimer />} />
         <Route path="/tools/property-management-readiness-checklist" element={<PropertyManagementReadinessChecklist />} />
         <Route path="/tools/investment-yield-calculator" element={<InvestmentYieldCalculator />} />
         <Route path="/tools/origin-home-buying-planner" element={<OriginHomeBuyingPlanner />} />

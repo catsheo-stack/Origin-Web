@@ -44,15 +44,6 @@ const toolLinks = [
 const companyLinks = [
   { label: "Home", path: "/" },
   { label: "About", path: "/about" },
-];
-
-const legalLinks = [
-  { label: "Privacy Policy", path: "/privacy-policy" },
-  { label: "Terms of Use", path: "/terms-of-use" },
-  {
-    label: "Professional Services & Referral Disclaimer",
-    path: "/professional-disclaimer",
-  },
   { label: "Contact", path: "/contact" },
 ];
 
@@ -61,7 +52,6 @@ const FOOTER_GROUPS = [
   { key: "knowledge", title: "Knowledge Centre", links: knowledgeLinks },
   { key: "tools", title: "Tools", links: toolLinks },
   { key: "company", title: "Company", links: companyLinks },
-  { key: "legal", title: "Legal", links: legalLinks },
 ];
 
 export default function Footer() {
@@ -103,17 +93,10 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="mx-auto max-w-7xl px-6 py-2.5 lg:px-10">
-          <div className="mx-auto max-w-4xl text-center">
-            <p className="text-[11px] leading-5 text-parchment/45">
-              Origin Property Concierge is an independent property concierge and
-              coordination platform connecting clients with appropriately licensed
-              professionals where required.
-            </p>
-            <p className="mt-1 text-[11px] text-parchment/35">
-              © {new Date().getFullYear()} Origin Property Concierge. All rights
-              reserved.
-            </p>
-          </div>
+          <p className="text-center text-[11px] text-parchment/40">
+            © {new Date().getFullYear()} Origin Property Concierge. All rights
+            reserved.
+          </p>
         </div>
       </div>
     </footer>
