@@ -6,9 +6,37 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import SeoManager from '@/components/seo/SeoManager';
+import StructuredDataManager from '@/components/seo/StructuredDataManager';
 
 import PageLayout from '@/components/origin/PageLayout';
 import Home from '@/pages/Home';
+import HomeZh from '@/pages/zh/HomeZh';
+import AboutZh from '@/pages/zh/AboutZh';
+import BuyerAdvisoryZh from '@/pages/zh/BuyerAdvisoryZh';
+import PropertyManagementZh from '@/pages/zh/PropertyManagementZh';
+import ConveyancingZh from '@/pages/zh/ConveyancingZh';
+import MortgageFinanceZh from '@/pages/zh/MortgageFinanceZh';
+import ContactZh from '@/pages/zh/ContactZh';
+import BookConsultationZh from '@/pages/zh/BookConsultationZh';
+import ThankYouZh from '@/pages/zh/ThankYouZh';
+import PrivacyPolicyZh from '@/pages/zh/PrivacyPolicyZh';
+import TermsOfUseZh from '@/pages/zh/TermsOfUseZh';
+import ProfessionalDisclaimerZh from '@/pages/zh/ProfessionalDisclaimerZh';
+import FAQZh from '@/pages/zh/FAQZh';
+import KnowledgeCentreZh from '@/pages/zh/KnowledgeCentreZh';
+import BuyerResourcesZh from '@/pages/zh/BuyerResourcesZh';
+import PropertyManagementResourcesZh from '@/pages/zh/PropertyManagementResourcesZh';
+import ConveyancingResourcesZh from '@/pages/zh/ConveyancingResourcesZh';
+import MortgageResourcesZh from '@/pages/zh/MortgageResourcesZh';
+import ArticleDetailZh from '@/pages/zh/ArticleDetailZh';
+import ToolsZh from '@/pages/zh/ToolsZh';
+import InvestmentYieldCalculatorZh from '@/pages/zh/InvestmentYieldCalculatorZh';
+import OriginHomeBuyingPlannerZh from '@/pages/zh/OriginHomeBuyingPlannerZh';
+import PropertyManagementReadinessChecklistZh from '@/pages/zh/PropertyManagementReadinessChecklistZh';
+import BuyerSettlementTrackerZh from '@/pages/zh/BuyerSettlementTrackerZh';
+import SellerSettlementTrackerZh from '@/pages/zh/SellerSettlementTrackerZh';
+
 import BuyerAdvisory from '@/pages/BuyerAdvisory';
 import BuyerResources from '@/pages/BuyerResources';
 import PropertyManagementResources from '@/pages/PropertyManagementResources';
@@ -32,6 +60,8 @@ import InvestmentYieldCalculator from '@/pages/tools/InvestmentYieldCalculator';
 import OriginHomeBuyingPlanner from '@/pages/tools/OriginHomeBuyingPlanner';
 import BuyerSettlementTracker from '@/pages/tools/BuyerSettlementTracker';
 import SellerSettlementTracker from '@/pages/tools/SellerSettlementTracker';
+import BuyerAgentChecklist from '@/en/pages/HomeBuyerJourneyChecklist';
+import BuyerAgentChecklistZh from '@/pages/HomeBuyerJourneyChecklistZh';
 import About from '@/pages/About';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
@@ -81,6 +111,36 @@ const AuthenticatedApp = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route element={<PageLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/zh" element={<HomeZh />} />
+        <Route path="/zh/about" element={<AboutZh />} />
+        <Route path="/zh/buyer-advisory" element={<BuyerAdvisoryZh />} />
+        <Route path="/zh/property-management" element={<PropertyManagementZh />} />
+        <Route path="/zh/conveyancing" element={<ConveyancingZh />} />
+        <Route path="/zh/mortgage-finance" element={<MortgageFinanceZh />} />
+        <Route path="/zh/contact" element={<ContactZh />} />
+        <Route path="/zh/book-consultation" element={<BookConsultationZh />} />
+        <Route path="/zh/thank-you" element={<ThankYouZh />} />
+        <Route path="/zh/privacy-policy" element={<PrivacyPolicyZh />} />
+        <Route path="/zh/terms-of-use" element={<TermsOfUseZh />} />
+        <Route path="/zh/professional-disclaimer" element={<ProfessionalDisclaimerZh />} />
+        <Route path="/zh/faq" element={<FAQZh />} />
+        <Route path="/zh/knowledge-centre" element={<KnowledgeCentreZh />} />
+        <Route path="/zh/buyer-advisory/resources" element={<BuyerResourcesZh />} />
+        <Route path="/zh/property-management/resources" element={<PropertyManagementResourcesZh />} />
+        <Route path="/zh/conveyancing/resources" element={<ConveyancingResourcesZh />} />
+        <Route path="/zh/mortgage-finance/resources" element={<MortgageResourcesZh />} />
+        <Route path="/zh/article/:slug" element={<ArticleDetailZh />} />
+        <Route path="/zh/guides" element={<KnowledgeCentreZh />} />
+        <Route path="/zh/property-guides" element={<PropertyManagementResourcesZh />} />
+        <Route path="/zh/property-guides/:slug" element={<ArticleDetailZh />} />
+        <Route path="/zh/tools" element={<ToolsZh />} />
+        <Route path="/zh/tools/property-management-readiness-checklist" element={<PropertyManagementReadinessChecklistZh />} />
+        <Route path="/zh/tools/investment-yield-calculator" element={<InvestmentYieldCalculatorZh />} />
+        <Route path="/zh/tools/origin-home-buying-planner" element={<OriginHomeBuyingPlannerZh />} />
+        <Route path="/zh/tools/buyer-settlement-tracker" element={<BuyerSettlementTrackerZh />} />
+        <Route path="/zh/tools/seller-settlement-tracker" element={<SellerSettlementTrackerZh />} />
+        <Route path="/zh/tools/buyer-agent-checklist" element={<BuyerAgentChecklistZh />} />
+
         <Route path="/property-management" element={<PropertyManagement />} />
         <Route path="/property-guides" element={<PropertyGuides />} />
         <Route path="/knowledge-centre" element={<PropertyGuides />} />
@@ -110,6 +170,7 @@ const AuthenticatedApp = () => {
         <Route path="/tools/origin-home-buying-planner" element={<OriginHomeBuyingPlanner />} />
         <Route path="/tools/buyer-settlement-tracker" element={<BuyerSettlementTracker />} />
         <Route path="/tools/seller-settlement-tracker" element={<SellerSettlementTracker />} />
+        <Route path="/tools/buyer-agent-checklist" element={<BuyerAgentChecklist />} />
       </Route>
       <Route element={<HermesLayout />}>
         <Route path="/hermes" element={<HermesDashboard />} />
@@ -134,6 +195,8 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
+          <SeoManager />
+          <StructuredDataManager />
           <AuthenticatedApp />
         </Router>
         <Toaster />

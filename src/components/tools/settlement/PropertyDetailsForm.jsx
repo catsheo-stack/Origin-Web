@@ -2,9 +2,13 @@ import React from "react";
 import { RotateCcw } from "lucide-react";
 import LegalConsent from "@/components/origin/LegalConsent";
 
-const BUYER_TYPES = ["First Home Buyer", "Owner Occupier", "Investor"];
+const BUYER_TYPES = [
+  { value: "First Home Buyer", en: "First Home Buyer", zh: "首次置業者" },
+  { value: "Owner Occupier", en: "Owner Occupier", zh: "自住買家" },
+  { value: "Investor", en: "Investor", zh: "投資者" },
+];
 
-export default function PropertyDetailsForm({ values, onChange, onSubmit, started, onRestart }) {
+export default function PropertyDetailsForm({ values, onChange, onSubmit, started, onRestart, zh = false }) {
   const set = (field) => (e) => onChange({ ...values, [field]: e.target.value });
   const canSubmit = values.legalConsent && values.address && values.contractDate && values.settlementDate && values.buyerType;
 
@@ -14,34 +18,34 @@ export default function PropertyDetailsForm({ values, onChange, onSubmit, starte
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone/60 p-6 md:p-8">
-      <p className="text-xs tracking-widest uppercase text-golden mb-1">Step 1</p>
-      <h2 className="font-heading text-xl md:text-2xl text-midnight mb-1">Property Details</h2>
-      <p className="text-sm text-midnight/50 mb-6">A few details to personalise your settlement journey.</p>
+      <p className="text-xs tracking-widest uppercase text-golden mb-1">{zh ? "步驟 1" : "Step 1"}</p>
+      <h2 className="font-heading text-xl md:text-2xl text-midnight mb-1">{zh ? "物業資料" : "Property Details"}</h2>
+      <p className="text-sm text-midnight/50 mb-6">{zh ? "請提供一些資料，以便為您個人化交割流程。" : "A few details to personalise your settlement journey."}</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="md:col-span-2">
-          <label className={labelClass}>Property Address</label>
-          <input type="text" value={values.address || ""} onChange={set("address")} placeholder="e.g. 12 Smith Street, Richmond VIC 3121" className={inputClass} />
+          <label className={labelClass}>{zh ? "物業地址" : "Property Address"}</label>
+          <input type="text" value={values.address || ""} onChange={set("address")} placeholder={zh ? "例如：12 Smith Street, Richmond VIC 3121" : "e.g. 12 Smith Street, Richmond VIC 3121"} className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Contract Date</label>
+          <label className={labelClass}>{zh ? "合約日期" : "Contract Date"}</label>
           <input type="date" value={values.contractDate || ""} onChange={set("contractDate")} className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Settlement Date</label>
+          <label className={labelClass}>{zh ? "交割日期" : "Settlement Date"}</label>
           <input type="date" value={values.settlementDate || ""} onChange={set("settlementDate")} className={inputClass} />
         </div>
         <div className="md:col-span-2">
-          <label className={labelClass}>Buyer Type</label>
+          <label className={labelClass}>{zh ? "買家類型" : "Buyer Type"}</label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {BUYER_TYPES.map((t) => (
               <button
-                key={t}
+                key={t.value}
                 type="button"
-                onClick={() => onChange({ ...values, buyerType: t })}
-                className={`rounded-xl border px-4 py-3 text-sm font-medium transition ${values.buyerType === t ? "border-golden bg-golden/10 text-midnight" : "border-stone bg-parchment/40 text-midnight/60 hover:border-golden/40"}`}
+                onClick={() => onChange({ ...values, buyerType: t.value })}
+                className={`rounded-xl border px-4 py-3 text-sm font-medium transition ${values.buyerType === t.value ? "border-golden bg-golden/10 text-midnight" : "border-stone bg-parchment/40 text-midnight/60 hover:border-golden/40"}`}
               >
-                {t}
+                {zh ? t.zh : t.en}
               </button>
             ))}
           </div>
@@ -49,6 +53,7 @@ export default function PropertyDetailsForm({ values, onChange, onSubmit, starte
       </div>
 
       <LegalConsent
+        zh={zh}
         id="buyer-tracker-legal-consent"
         checked={Boolean(values.legalConsent)}
         onChange={(checked) =>
@@ -74,14 +79,14 @@ export default function PropertyDetailsForm({ values, onChange, onSubmit, starte
           disabled={!canSubmit}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-golden text-midnight text-sm font-medium px-8 py-3.5 rounded-full hover:bg-golden/90 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Start My Journey
+          {zh ? "開始我的交割流程" : "Start My Journey"}
         </button>
         {started && (
           <button
             onClick={onRestart}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-midnight/60 text-sm font-medium px-6 py-3.5 rounded-full hover:bg-midnight/5 transition"
           >
-            <RotateCcw size={16} /> Restart Journey
+            <RotateCcw size={16} /> {zh ? "重新開始流程" : "Restart Journey"}
           </button>
         )}
       </div>

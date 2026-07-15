@@ -10,10 +10,14 @@ export default function GuideCard({
   imageUrl,
   readingTime,
   publishDate,
+  linkPrefix = "/article",
+  readLabel = "Read guide",
+  minuteLabel = "min read",
+  fallbackLabel = "Origin Knowledge Centre",
 }) {
   return (
     <Link
-      to={`/article/${slug}`}
+      to={`${linkPrefix}/${slug}`}
       className="group block overflow-hidden rounded-xl border border-stone/60 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-golden/60"
     >
       {imageUrl ? (
@@ -28,7 +32,7 @@ export default function GuideCard({
       ) : (
         <div className="flex aspect-[3/2] items-center justify-center bg-gradient-to-br from-parchment to-stone/40">
           <span className="px-6 text-center font-heading text-xl text-midnight/45">
-            {category || "Origin Knowledge Centre"}
+            {category || fallbackLabel}
           </span>
         </div>
       )}
@@ -55,7 +59,7 @@ export default function GuideCard({
             {readingTime ? (
               <>
                 <Clock size={12} />
-                {readingTime} min read
+                {readingTime} {minuteLabel}
               </>
             ) : null}
             {readingTime && publishDate ? <span>•</span> : null}
@@ -63,7 +67,7 @@ export default function GuideCard({
           </span>
 
           <span className="inline-flex items-center gap-1 text-xs font-medium text-golden">
-            Read guide
+            {readLabel}
             <ArrowUpRight
               size={12}
               className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"

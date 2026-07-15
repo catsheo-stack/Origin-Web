@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import SectionWrapper from "@/components/origin/SectionWrapper";
 import ToolHero from "@/components/tools/ToolHero";

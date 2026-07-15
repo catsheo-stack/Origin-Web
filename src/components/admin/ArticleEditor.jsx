@@ -13,7 +13,7 @@ import ExportMenu from './editor/ExportMenu';
 import AiActions from './editor/AiActions';
 import VersionHistory from './editor/VersionHistory';
 import HermesImportDialog from './editor/HermesImportDialog';
-import { generateSlug, calculateReadingTime, countWords, countCharacters, mapHermesPayload } from './editor/cmsUtils';
+import { generateSlug, calculateReadingTime, countWords, countCharacters } from './editor/cmsUtils';
 
 const buildInitialData = (article) => ({
   title: article?.title || '',

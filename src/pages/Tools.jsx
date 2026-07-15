@@ -1,11 +1,20 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ClipboardCheck, TrendingUp, Home, FileText, FileSignature } from "lucide-react";
+import { ArrowRight, ClipboardCheck, TrendingUp, Home, FileText, FileSignature, ListChecks } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import SectionWrapper from "@/components/origin/SectionWrapper";
 import CTABanner from "@/components/origin/CTABanner";
 
 const TOOLS = [
+  {
+    name: "Buyer Agent Checklist",
+    description: "Plan and track every stage of your property buying journey, from search and due diligence to settlement and key handover.",
+    category: "Buyer Advisory",
+    path: "/tools/buyer-agent-checklist",
+    icon: ListChecks,
+    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80",
+    available: true,
+  },
   {
     name: "Origin Home Buying Planner",
     description: "Plan your buying budget, estimate costs, assess your deposit position and calculate your financial readiness.",

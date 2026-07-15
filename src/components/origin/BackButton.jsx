@@ -10,7 +10,7 @@ export default function BackButton() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  if (location.pathname === "/") return null;
+  if (location.pathname === "/" || location.pathname === "/zh" || location.pathname.startsWith("/zh/")) return null;
 
   return (
     <div className="bg-parchment border-b border-stone/50">
